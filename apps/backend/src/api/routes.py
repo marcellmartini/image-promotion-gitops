@@ -4,10 +4,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from adapters import PostgreSQLUserAdapter, get_db
-from application import UserService
-from domain import UserAlreadyExistsException, UserNotFoundException
+from application import AuthService, UserService
+from domain import UserAlreadyExistsException, UserNotFoundException, UserRole
 
-from .schemas import UserCreate, UserListResponse, UserResponse, UserUpdate
+from .auth_routes import get_current_user, require_admin
+from .schemas import (
+    UserCreate,
+    UserListResponse,
+    UserResponse,
+    UserRoleEnum,
+    UserUpdate,
+)
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -18,26 +25,44 @@ def get_user_service(db: Session = Depends(get_db)) -> UserService:
     return UserService(adapter)
 
 
+def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
+    """Dependency para obter o serviço de autenticação."""
+    adapter = PostgreSQLUserAdapter(db)
+    return AuthService(adapter)
+
+
+def _user_to_response(user) -> UserResponse:
+    """Converte User domain para UserResponse."""
+    return UserResponse(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        role=UserRoleEnum(user.role.value),
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+    )
+
+
 @router.post(
     "",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Criar usuário",
-    description="Cria um novo usuário no sistema.",
+    description="Cria um novo usuário no sistema. Requer permissão de admin.",
 )
 def create_user(
     user_data: UserCreate,
-    service: UserService = Depends(get_user_service),
+    _current_user: UserResponse = Depends(require_admin),
+    service: AuthService = Depends(get_auth_service),
 ) -> UserResponse:
     try:
-        user = service.create_user(name=user_data.name, email=user_data.email)
-        return UserResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
+        user = service.register_user(
+            name=user_data.name,
+            email=user_data.email,
+            password=user_data.password,
+            role=UserRole(user_data.role.value),
         )
+        return _user_to_response(user)
     except UserAlreadyExistsException as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -54,20 +79,12 @@ def create_user(
 def list_users(
     skip: int = 0,
     limit: int = 100,
+    _current_user: UserResponse = Depends(get_current_user),
     service: UserService = Depends(get_user_service),
 ) -> UserListResponse:
     users = service.list_users(skip=skip, limit=limit)
     return UserListResponse(
-        users=[
-            UserResponse(
-                id=user.id,
-                name=user.name,
-                email=user.email,
-                created_at=user.created_at,
-                updated_at=user.updated_at,
-            )
-            for user in users
-        ],
+        users=[_user_to_response(user) for user in users],
         total=len(users),
     )
 
@@ -80,17 +97,12 @@ def list_users(
 )
 def get_user(
     user_id: UUID,
+    _current_user: UserResponse = Depends(get_current_user),
     service: UserService = Depends(get_user_service),
 ) -> UserResponse:
     try:
         user = service.get_user(user_id)
-        return UserResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-        )
+        return _user_to_response(user)
     except UserNotFoundException as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -102,11 +114,12 @@ def get_user(
     "/{user_id}",
     response_model=UserResponse,
     summary="Atualizar usuário",
-    description="Atualiza um usuário existente.",
+    description="Atualiza um usuário existente. Requer permissão de admin.",
 )
 def update_user(
     user_id: UUID,
     user_data: UserUpdate,
+    _current_user: UserResponse = Depends(require_admin),
     service: UserService = Depends(get_user_service),
 ) -> UserResponse:
     try:
@@ -115,13 +128,7 @@ def update_user(
             name=user_data.name,
             email=user_data.email,
         )
-        return UserResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-        )
+        return _user_to_response(user)
     except UserNotFoundException as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -138,10 +145,11 @@ def update_user(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Deletar usuário",
-    description="Deleta um usuário existente.",
+    description="Deleta um usuário existente. Requer permissão de admin.",
 )
 def delete_user(
     user_id: UUID,
+    _current_user: UserResponse = Depends(require_admin),
     service: UserService = Depends(get_user_service),
 ) -> None:
     try:

@@ -15,8 +15,11 @@ class UserService:
     def __init__(self, persistence_port: UserPersistencePort):
         self._persistence = persistence_port
 
-    def create_user(self, name: str, email: str) -> User:
-        """Cria um novo usuário."""
+    def create_user(self, name: str, email: str) -> User:  # pragma: no cover
+        """Cria um novo usuário.
+
+        Deprecated: Use AuthService.register_user() instead.
+        """
         existing_user = self._persistence.find_by_email(email)
         if existing_user:
             raise UserAlreadyExistsException(email)
