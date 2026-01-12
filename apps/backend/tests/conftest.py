@@ -44,3 +44,57 @@ def client(db_session):
         yield c
     Base.metadata.drop_all(bind=engine)
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def admin_token(client):
+    """Fixture que cria um admin e retorna o token."""
+    # Registra um admin
+    client.post(
+        "/api/auth/register",
+        json={
+            "name": "Admin User",
+            "email": "admin@example.com",
+            "password": "adminpass123",
+            "role": "admin",
+        },
+    )
+    # Faz login
+    response = client.post(
+        "/api/auth/login",
+        json={"email": "admin@example.com", "password": "adminpass123"},
+    )
+    return response.json()["access_token"]
+
+
+@pytest.fixture(scope="function")
+def user_token(client):
+    """Fixture que cria um usuário comum e retorna o token."""
+    # Registra um usuário
+    client.post(
+        "/api/auth/register",
+        json={
+            "name": "Normal User",
+            "email": "user@example.com",
+            "password": "userpass123",
+            "role": "user",
+        },
+    )
+    # Faz login
+    response = client.post(
+        "/api/auth/login",
+        json={"email": "user@example.com", "password": "userpass123"},
+    )
+    return response.json()["access_token"]
+
+
+@pytest.fixture(scope="function")
+def auth_headers(admin_token):
+    """Fixture que retorna headers de autenticação para admin."""
+    return {"Authorization": f"Bearer {admin_token}"}
+
+
+@pytest.fixture(scope="function")
+def user_auth_headers(user_token):
+    """Fixture que retorna headers de autenticação para usuário comum."""
+    return {"Authorization": f"Bearer {user_token}"}

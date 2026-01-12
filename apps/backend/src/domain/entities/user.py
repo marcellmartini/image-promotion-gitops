@@ -1,7 +1,15 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
+
+
+class UserRole(str, Enum):
+    """Roles de usuário no sistema."""
+
+    ADMIN = "admin"
+    USER = "user"
 
 
 @dataclass
@@ -10,6 +18,8 @@ class User:
 
     name: str
     email: str
+    password_hash: str = ""
+    role: UserRole = UserRole.USER
     id: UUID = field(default_factory=uuid4)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
@@ -21,3 +31,7 @@ class User:
         if email is not None:
             self.email = email
         self.updated_at = datetime.utcnow()
+
+    def is_admin(self) -> bool:
+        """Verifica se o usuário é admin."""
+        return self.role == UserRole.ADMIN

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from domain import User, UserPersistencePort
+from domain import User, UserPersistencePort, UserRole
 
 from .models import UserModel
 
@@ -20,6 +20,8 @@ class PostgreSQLUserAdapter(UserPersistencePort):
             id=model.id,
             name=model.name,
             email=model.email,
+            password_hash=model.password_hash,
+            role=UserRole(model.role),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -30,6 +32,8 @@ class PostgreSQLUserAdapter(UserPersistencePort):
             id=user.id,
             name=user.name,
             email=user.email,
+            password_hash=user.password_hash,
+            role=user.role.value,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )

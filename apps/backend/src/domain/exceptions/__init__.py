@@ -22,3 +22,10 @@ class UserAlreadyExistsException(DomainException):
 
 class InvalidUserDataException(DomainException):
     """Exceção lançada quando os dados do usuário são inválidos."""
+
+
+class InvalidCredentialsException(DomainException):
+    """Exceção lançada quando as credenciais são inválidas."""
+
+    def __init__(self) -> None:
+        super().__init__("Email ou senha inválidos")
