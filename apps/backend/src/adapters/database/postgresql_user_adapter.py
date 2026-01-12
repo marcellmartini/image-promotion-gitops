@@ -65,4 +65,9 @@ class PostgreSQLUserAdapter(UserPersistencePort):
         raise ValueError(f"User with id {user.id} not found")
 
     def delete(self, user_id: UUID) -> bool:
-        pass  # pragma: no cover
+        model = self._db.query(UserModel).filter(UserModel.id == user_id).first()
+        if model:
+            self._db.delete(model)
+            self._db.commit()
+            return True
+        return False

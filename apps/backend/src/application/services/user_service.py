@@ -57,3 +57,10 @@ class UserService:
 
         user.update(name=name, email=email)
         return self._persistence.update(user)
+
+    def delete_user(self, user_id: UUID) -> bool:
+        """Deleta um usuário pelo ID."""
+        user = self._persistence.find_by_id(user_id)
+        if not user:
+            raise UserNotFoundException(str(user_id))
+        return self._persistence.delete(user_id)

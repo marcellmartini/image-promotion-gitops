@@ -70,3 +70,12 @@ class TestPostgreSQLUserAdapterUpdate:
 
         with pytest.raises(ValueError, match="not found"):
             adapter.update(nonexistent_user)
+
+
+class TestPostgreSQLUserAdapterDelete:
+    """Testes para PostgreSQLUserAdapter.delete."""
+
+    def test_delete_nonexistent_user_returns_false(self, db_session):
+        adapter = PostgreSQLUserAdapter(db_session)
+        result = adapter.delete(uuid4())
+        assert result is False

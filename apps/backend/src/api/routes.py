@@ -132,3 +132,22 @@ def update_user(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         ) from e
+
+
+@router.delete(
+    "/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Deletar usuário",
+    description="Deleta um usuário existente.",
+)
+def delete_user(
+    user_id: UUID,
+    service: UserService = Depends(get_user_service),
+) -> None:
+    try:
+        service.delete_user(user_id)
+    except UserNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.message,
+        ) from e

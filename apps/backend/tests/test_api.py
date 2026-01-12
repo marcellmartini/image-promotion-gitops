@@ -158,3 +158,27 @@ class TestUpdateUser:
 
         assert response.status_code == 409
         assert "já existe" in response.json()["detail"]
+
+
+class TestDeleteUser:
+    """Testes para deleção de usuário."""
+
+    def test_delete_user_success(self, client):
+        user_data = {"name": "John Doe", "email": "john@example.com"}
+        create_response = client.post("/api/users", json=user_data)
+        user_id = create_response.json()["id"]
+
+        response = client.delete(f"/api/users/{user_id}")
+        assert response.status_code == 204
+
+        get_response = client.get(f"/api/users/{user_id}")
+        assert get_response.status_code == 404
+
+    def test_delete_user_not_found(self, client):
+        from uuid import uuid4
+
+        fake_id = uuid4()
+        response = client.delete(f"/api/users/{fake_id}")
+
+        assert response.status_code == 404
+        assert "não encontrado" in response.json()["detail"]
