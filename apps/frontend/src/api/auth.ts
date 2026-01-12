@@ -1,28 +1,29 @@
-import { apiClient, setAccessToken } from './client';
+import { apiClient, setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from './client';
 import type { LoginRequest, LoginResponse, User } from '../types';
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>('/auth/login', data, {
-      withCredentials: true, // Receive refresh token cookie
-    });
+    const response = await apiClient.post<LoginResponse>('/auth/login', data);
     setAccessToken(response.data.access_token);
+    setRefreshToken(response.data.refresh_token);
     return response.data;
   },
 
   logout: async (): Promise<void> => {
     try {
-      await apiClient.post('/auth/logout', {}, {
-        withCredentials: true,
-      });
+      await apiClient.post('/auth/logout');
     } finally {
-      setAccessToken(null);
+      clearTokens();
     }
   },
 
   refresh: async (): Promise<{ access_token: string; user: User }> => {
-    const response = await apiClient.post('/auth/refresh', {}, {
-      withCredentials: true,
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      throw new Error('No refresh token');
+    }
+    const response = await apiClient.post('/auth/refresh', {
+      refresh_token: refreshToken,
     });
     setAccessToken(response.data.access_token);
     return response.data;

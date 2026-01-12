@@ -2,6 +2,8 @@ import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
 export const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -10,19 +12,37 @@ export const apiClient = axios.create({
   },
 });
 
-let accessToken: string | null = null;
-
 export const setAccessToken = (token: string | null) => {
-  accessToken = token;
+  if (token) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
 };
 
-export const getAccessToken = () => accessToken;
+export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
+
+export const setRefreshToken = (token: string | null) => {
+  if (token) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+};
+
+export const getRefreshToken = () => localStorage.getItem(REFRESH_TOKEN_KEY);
+
+export const clearTokens = () => {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
 
 // Request interceptor - add auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -43,10 +63,17 @@ apiClient.interceptors.response.use(
     ) {
       (originalRequest as InternalAxiosRequestConfig & { _retry?: boolean })._retry = true;
 
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) {
+        clearTokens();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
       try {
         // Try to refresh the token
-        const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {}, {
-          withCredentials: true, // Send refresh token cookie
+        const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
+          refresh_token: refreshToken,
         });
 
         const { access_token } = response.data;
@@ -56,8 +83,8 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return apiClient(originalRequest);
       } catch {
-        // Refresh failed - clear token and redirect to login
-        setAccessToken(null);
+        // Refresh failed - clear tokens and redirect to login
+        clearTokens();
         window.location.href = '/login';
         return Promise.reject(error);
       }

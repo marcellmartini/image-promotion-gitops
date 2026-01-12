@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { authApi } from '../api';
+import { getAccessToken, getRefreshToken } from '../api/client';
 import type { User } from '../types';
 
 interface AuthState {
@@ -51,20 +52,44 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
-    set({ isLoading: true });
-    try {
-      const response = await authApi.refresh();
-      set({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch {
+    // Check if we have stored tokens
+    const accessToken = getAccessToken();
+    const refreshToken = getRefreshToken();
+
+    if (!accessToken && !refreshToken) {
       set({
         user: null,
         isAuthenticated: false,
         isLoading: false,
       });
+      return;
+    }
+
+    set({ isLoading: true });
+    try {
+      // Try to get current user with existing access token
+      const user = await authApi.me();
+      set({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch {
+      // Access token might be expired, try to refresh
+      try {
+        const response = await authApi.refresh();
+        set({
+          user: response.user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      } catch {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
+      }
     }
   },
 
