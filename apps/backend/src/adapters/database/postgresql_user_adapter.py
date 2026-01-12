@@ -22,6 +22,7 @@ class PostgreSQLUserAdapter(UserPersistencePort):
             email=model.email,
             password_hash=model.password_hash,
             role=UserRole(model.role),
+            birth_date=model.birth_date,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -34,6 +35,7 @@ class PostgreSQLUserAdapter(UserPersistencePort):
             email=user.email,
             password_hash=user.password_hash,
             role=user.role.value,
+            birth_date=user.birth_date,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -62,6 +64,7 @@ class PostgreSQLUserAdapter(UserPersistencePort):
         if model:
             model.name = user.name
             model.email = user.email
+            model.birth_date = user.birth_date
             model.updated_at = user.updated_at
             self._db.commit()
             self._db.refresh(model)

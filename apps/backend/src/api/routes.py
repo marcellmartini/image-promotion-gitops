@@ -38,6 +38,7 @@ def _user_to_response(user) -> UserResponse:
         name=user.name,
         email=user.email,
         role=UserRoleEnum(user.role.value),
+        birth_date=user.birth_date,
         created_at=user.created_at,
         updated_at=user.updated_at,
     )
@@ -61,6 +62,7 @@ def create_user(
             email=user_data.email,
             password=user_data.password,
             role=UserRole(user_data.role.value),
+            birth_date=user_data.birth_date,
         )
         return _user_to_response(user)
     except UserAlreadyExistsException as e:
@@ -127,6 +129,7 @@ def update_user(
             user_id=user_id,
             name=user_data.name,
             email=user_data.email,
+            birth_date=user_data.birth_date,
         )
         return _user_to_response(user)
     except UserNotFoundException as e:

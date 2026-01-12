@@ -237,3 +237,20 @@ class TestUserEntity:
 
         assert admin.is_admin() is True
         assert user.is_admin() is False
+
+    def test_user_update_with_birth_date(self):
+        from datetime import date
+
+        user = User(
+            name="Test User",
+            email="test@example.com",
+            password_hash="hash",
+        )
+
+        assert user.birth_date is None
+
+        new_birth_date = date(1990, 5, 15)
+        user.update(birth_date=new_birth_date)
+
+        assert user.birth_date == new_birth_date
+        assert user.updated_at is not None

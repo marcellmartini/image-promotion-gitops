@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
@@ -70,6 +70,7 @@ class AuthService:
         email: str,
         password: str,
         role: UserRole = UserRole.USER,
+        birth_date: Optional[date] = None,
     ) -> User:
         """Registra um novo usuário."""
         existing_user = self._persistence.find_by_email(email)
@@ -82,6 +83,7 @@ class AuthService:
             email=email,
             password_hash=password_hash,
             role=role,
+            birth_date=birth_date,
         )
         return self._persistence.save(user)
 

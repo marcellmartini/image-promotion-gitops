@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 from uuid import UUID
 
@@ -46,7 +47,11 @@ class UserService:
         return self._persistence.find_all(skip=skip, limit=limit)
 
     def update_user(
-        self, user_id: UUID, name: Optional[str] = None, email: Optional[str] = None
+        self,
+        user_id: UUID,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        birth_date: Optional[date] = None,
     ) -> User:
         """Atualiza um usuário existente."""
         user = self._persistence.find_by_id(user_id)
@@ -58,7 +63,7 @@ class UserService:
             if existing_user:
                 raise UserAlreadyExistsException(email)
 
-        user.update(name=name, email=email)
+        user.update(name=name, email=email, birth_date=birth_date)
         return self._persistence.update(user)
 
     def delete_user(self, user_id: UUID) -> bool:

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID
@@ -25,6 +25,7 @@ class UserCreate(UserBase):
 
     password: str
     role: UserRoleEnum = UserRoleEnum.USER
+    birth_date: Optional[date] = None
 
 
 class UserUpdate(BaseModel):
@@ -32,6 +33,7 @@ class UserUpdate(BaseModel):
 
     name: Optional[str] = None
     email: Optional[EmailStr] = None
+    birth_date: Optional[date] = None
 
 
 class UserResponse(UserBase):
@@ -41,6 +43,7 @@ class UserResponse(UserBase):
 
     id: UUID
     role: UserRoleEnum
+    birth_date: Optional[date] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

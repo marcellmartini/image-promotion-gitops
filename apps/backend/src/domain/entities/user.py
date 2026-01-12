@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
@@ -21,15 +21,23 @@ class User:
     password_hash: str = ""
     role: UserRole = UserRole.USER
     id: UUID = field(default_factory=uuid4)
+    birth_date: Optional[date] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
 
-    def update(self, name: Optional[str] = None, email: Optional[str] = None) -> None:
+    def update(
+        self,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        birth_date: Optional[date] = None,
+    ) -> None:
         """Atualiza os dados do usuário."""
         if name is not None:
             self.name = name
         if email is not None:
             self.email = email
+        if birth_date is not None:
+            self.birth_date = birth_date
         self.updated_at = datetime.utcnow()
 
     def is_admin(self) -> bool:
