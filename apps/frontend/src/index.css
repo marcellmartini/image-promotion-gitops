@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-ctp-base text-ctp-text min-h-screen;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-ctp-mantle;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ctp-surface2 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ctp-overlay0;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ctp-base
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-ctp-blue text-ctp-crust hover:bg-ctp-sapphire focus:ring-ctp-blue;
+  }
+
+  .btn-danger {
+    @apply btn bg-ctp-red text-ctp-crust hover:bg-ctp-maroon focus:ring-ctp-red;
+  }
+
+  .btn-success {
+    @apply btn bg-ctp-green text-ctp-crust hover:bg-ctp-teal focus:ring-ctp-green;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-ctp-text hover:bg-ctp-surface0 focus:ring-ctp-overlay0;
+  }
+
+  .btn-secondary {
+    @apply btn bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 focus:ring-ctp-surface2;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 rounded-lg border border-ctp-surface2
+           bg-ctp-surface0 text-ctp-text placeholder-ctp-overlay0
+           focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .input-error {
+    @apply input border-ctp-red focus:ring-ctp-red;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-ctp-subtext1 mb-1;
+  }
+
+  .card {
+    @apply bg-ctp-surface0 rounded-xl border border-ctp-surface1 p-6;
+  }
+
+  .link {
+    @apply text-ctp-blue hover:text-ctp-sapphire underline-offset-2 hover:underline transition-colors;
+  }
+}
