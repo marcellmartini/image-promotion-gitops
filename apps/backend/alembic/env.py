@@ -1,10 +1,14 @@
 import os
 from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 # Importar os models para autogenerate
 from adapters.database import Base
