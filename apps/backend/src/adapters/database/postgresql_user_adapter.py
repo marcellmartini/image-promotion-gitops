@@ -54,7 +54,15 @@ class PostgreSQLUserAdapter(UserPersistencePort):
         return [self._to_domain(model) for model in models]
 
     def update(self, user: User) -> User:
-        pass  # pragma: no cover
+        model = self._db.query(UserModel).filter(UserModel.id == user.id).first()
+        if model:
+            model.name = user.name
+            model.email = user.email
+            model.updated_at = user.updated_at
+            self._db.commit()
+            self._db.refresh(model)
+            return self._to_domain(model)
+        raise ValueError(f"User with id {user.id} not found")
 
     def delete(self, user_id: UUID) -> bool:
         pass  # pragma: no cover

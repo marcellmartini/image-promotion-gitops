@@ -46,3 +46,27 @@ class TestUserServiceGetByEmail:
 
         with pytest.raises(UserNotFoundException):
             service.get_user_by_email("nonexistent@example.com")
+
+
+class TestUserServiceUpdate:
+    """Testes para UserService.update_user."""
+
+    def test_update_user_not_found(self, db_session):
+        adapter = PostgreSQLUserAdapter(db_session)
+        service = UserService(adapter)
+
+        with pytest.raises(UserNotFoundException):
+            service.update_user(uuid4(), name="New Name")
+
+
+class TestPostgreSQLUserAdapterUpdate:
+    """Testes para PostgreSQLUserAdapter.update."""
+
+    def test_update_nonexistent_user_raises_value_error(self, db_session):
+        from domain import User
+
+        adapter = PostgreSQLUserAdapter(db_session)
+        nonexistent_user = User(name="Ghost", email="ghost@example.com")
+
+        with pytest.raises(ValueError, match="not found"):
+            adapter.update(nonexistent_user)

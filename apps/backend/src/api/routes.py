@@ -7,7 +7,7 @@ from adapters import PostgreSQLUserAdapter, get_db
 from application import UserService
 from domain import UserAlreadyExistsException, UserNotFoundException
 
-from .schemas import UserCreate, UserListResponse, UserResponse
+from .schemas import UserCreate, UserListResponse, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -94,5 +94,41 @@ def get_user(
     except UserNotFoundException as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.message,
+        ) from e
+
+
+@router.put(
+    "/{user_id}",
+    response_model=UserResponse,
+    summary="Atualizar usuário",
+    description="Atualiza um usuário existente.",
+)
+def update_user(
+    user_id: UUID,
+    user_data: UserUpdate,
+    service: UserService = Depends(get_user_service),
+) -> UserResponse:
+    try:
+        user = service.update_user(
+            user_id=user_id,
+            name=user_data.name,
+            email=user_data.email,
+        )
+        return UserResponse(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+        )
+    except UserNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.message,
+        ) from e
+    except UserAlreadyExistsException as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
             detail=e.message,
         ) from e

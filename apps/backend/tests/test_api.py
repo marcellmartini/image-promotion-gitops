@@ -103,3 +103,58 @@ class TestGetUser:
         response = client.get(f"/api/users/{fake_id}")
         assert response.status_code == 404
         assert "não encontrado" in response.json()["detail"]
+
+
+class TestUpdateUser:
+    """Testes para atualização de usuário."""
+
+    def test_update_user_success(self, client):
+        user_data = {"name": "John Doe", "email": "john@example.com"}
+        create_response = client.post("/api/users", json=user_data)
+        user_id = create_response.json()["id"]
+
+        update_data = {"name": "John Updated", "email": "john.updated@example.com"}
+        response = client.put(f"/api/users/{user_id}", json=update_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == user_id
+        assert data["name"] == update_data["name"]
+        assert data["email"] == update_data["email"]
+        assert data["updated_at"] is not None
+
+    def test_update_user_partial(self, client):
+        user_data = {"name": "John Doe", "email": "john@example.com"}
+        create_response = client.post("/api/users", json=user_data)
+        user_id = create_response.json()["id"]
+
+        update_data = {"name": "John Partial"}
+        response = client.put(f"/api/users/{user_id}", json=update_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == update_data["name"]
+        assert data["email"] == user_data["email"]
+
+    def test_update_user_not_found(self, client):
+        from uuid import uuid4
+
+        fake_id = uuid4()
+        update_data = {"name": "Ghost User"}
+        response = client.put(f"/api/users/{fake_id}", json=update_data)
+
+        assert response.status_code == 404
+        assert "não encontrado" in response.json()["detail"]
+
+    def test_update_user_duplicate_email(self, client):
+        client.post("/api/users", json={"name": "User 1", "email": "user1@example.com"})
+        create_response = client.post(
+            "/api/users", json={"name": "User 2", "email": "user2@example.com"}
+        )
+        user2_id = create_response.json()["id"]
+
+        update_data = {"email": "user1@example.com"}
+        response = client.put(f"/api/users/{user2_id}", json=update_data)
+
+        assert response.status_code == 409
+        assert "já existe" in response.json()["detail"]

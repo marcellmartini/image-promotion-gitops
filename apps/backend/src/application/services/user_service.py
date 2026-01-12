@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from domain import (
@@ -40,3 +41,19 @@ class UserService:
     def list_users(self, skip: int = 0, limit: int = 100) -> list[User]:
         """Lista todos os usuários com paginação."""
         return self._persistence.find_all(skip=skip, limit=limit)
+
+    def update_user(
+        self, user_id: UUID, name: Optional[str] = None, email: Optional[str] = None
+    ) -> User:
+        """Atualiza um usuário existente."""
+        user = self._persistence.find_by_id(user_id)
+        if not user:
+            raise UserNotFoundException(str(user_id))
+
+        if email and email != user.email:
+            existing_user = self._persistence.find_by_email(email)
+            if existing_user:
+                raise UserAlreadyExistsException(email)
+
+        user.update(name=name, email=email)
+        return self._persistence.update(user)
