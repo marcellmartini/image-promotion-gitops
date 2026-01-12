@@ -51,9 +51,26 @@
 
 | Componente | Tecnologia | Observação |
 |------------|------------|------------|
-| **Frontend** | React + Vite | Interface de gestão de usuários |
-| **Backend** | FastAPI (Python) | API REST para CRUD de usuários |
+| **Frontend** | React + Vite | Interface de gestão de usuários com tema Catppuccin |
+| **Backend** | FastAPI (Python) | API REST com autenticação JWT e RBAC |
 | **Banco de Dados** | PostgreSQL | Rodando via docker-compose no host |
+
+### Funcionalidades Implementadas
+
+#### Backend
+- **CRUD de Usuários:** Create, Read, Update, Delete completo
+- **Autenticação JWT:** Login com tokens de acesso
+- **RBAC:** Controle de acesso baseado em roles (admin/user)
+- **Campo birth_date:** Data de nascimento no cadastro de usuários
+- **Endpoint /stats:** Estatísticas do sistema
+- **CORS:** Configurado para permitir acesso do frontend
+- **Migrations:** Alembic configurado com migrations versionadas
+
+#### Frontend
+- **Tema Catppuccin:** Interface com design consistente
+- **Gestão de Usuários:** Listagem, criação, edição e visualização
+- **Autenticação:** Login com persistência de tokens no localStorage
+- **Campo birth_date:** Input de data no formulário de usuários
 
 ### Infraestrutura
 
@@ -612,10 +629,11 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 
 ### Semana 1 (06/01 - 12/01)
 
-- [ ] Setup inicial do repositório
-- [ ] Backend FastAPI (CRUD usuários)
-- [ ] Frontend React + Vite
-- [ ] Docker Compose para PostgreSQL
+- [x] Setup inicial do repositório
+- [x] Backend FastAPI (CRUD usuários + JWT + RBAC)
+- [x] Frontend React + Vite (tema Catppuccin)
+- [x] Docker Compose para PostgreSQL
+- [x] Alembic migrations configurado
 - [ ] Dockerfiles para frontend e backend
 
 ### Semana 2 (13/01 - 15/01)
