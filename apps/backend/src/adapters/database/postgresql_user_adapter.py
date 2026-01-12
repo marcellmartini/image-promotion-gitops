@@ -46,10 +46,12 @@ class PostgreSQLUserAdapter(UserPersistencePort):
         return self._to_domain(model) if model else None
 
     def find_by_id(self, user_id: UUID) -> Optional[User]:
-        pass  # pragma: no cover
+        model = self._db.query(UserModel).filter(UserModel.id == user_id).first()
+        return self._to_domain(model) if model else None
 
     def find_all(self, skip: int = 0, limit: int = 100) -> list[User]:
-        pass  # pragma: no cover
+        models = self._db.query(UserModel).offset(skip).limit(limit).all()
+        return [self._to_domain(model) for model in models]
 
     def update(self, user: User) -> User:
         pass  # pragma: no cover

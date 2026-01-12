@@ -1,11 +1,13 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from adapters import PostgreSQLUserAdapter, get_db
 from application import UserService
-from domain import UserAlreadyExistsException
+from domain import UserAlreadyExistsException, UserNotFoundException
 
-from .schemas import UserCreate, UserResponse
+from .schemas import UserCreate, UserListResponse, UserResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -39,5 +41,58 @@ def create_user(
     except UserAlreadyExistsException as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
+            detail=e.message,
+        ) from e
+
+
+@router.get(
+    "",
+    response_model=UserListResponse,
+    summary="Listar usuários",
+    description="Lista todos os usuários com paginação.",
+)
+def list_users(
+    skip: int = 0,
+    limit: int = 100,
+    service: UserService = Depends(get_user_service),
+) -> UserListResponse:
+    users = service.list_users(skip=skip, limit=limit)
+    return UserListResponse(
+        users=[
+            UserResponse(
+                id=user.id,
+                name=user.name,
+                email=user.email,
+                created_at=user.created_at,
+                updated_at=user.updated_at,
+            )
+            for user in users
+        ],
+        total=len(users),
+    )
+
+
+@router.get(
+    "/{user_id}",
+    response_model=UserResponse,
+    summary="Buscar usuário",
+    description="Busca um usuário pelo ID.",
+)
+def get_user(
+    user_id: UUID,
+    service: UserService = Depends(get_user_service),
+) -> UserResponse:
+    try:
+        user = service.get_user(user_id)
+        return UserResponse(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+        )
+    except UserNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=e.message,
         ) from e

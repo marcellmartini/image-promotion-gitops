@@ -1,6 +1,9 @@
+from uuid import UUID
+
 from domain import (
     User,
     UserAlreadyExistsException,
+    UserNotFoundException,
     UserPersistencePort,
 )
 
@@ -19,3 +22,21 @@ class UserService:
 
         user = User(name=name, email=email)
         return self._persistence.save(user)
+
+    def get_user(self, user_id: UUID) -> User:
+        """Busca um usuário pelo ID."""
+        user = self._persistence.find_by_id(user_id)
+        if not user:
+            raise UserNotFoundException(str(user_id))
+        return user
+
+    def get_user_by_email(self, email: str) -> User:
+        """Busca um usuário pelo email."""
+        user = self._persistence.find_by_email(email)
+        if not user:
+            raise UserNotFoundException(email)
+        return user
+
+    def list_users(self, skip: int = 0, limit: int = 100) -> list[User]:
+        """Lista todos os usuários com paginação."""
+        return self._persistence.find_all(skip=skip, limit=limit)
