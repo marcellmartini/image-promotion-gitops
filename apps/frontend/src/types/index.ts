@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  birth_date: string | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -14,11 +15,13 @@ export interface UserCreate {
   email: string;
   password: string;
   role?: UserRole;
+  birth_date?: string | null;
 }
 
 export interface UserUpdate {
   name?: string;
   email?: string;
+  birth_date?: string | null;
 }
 
 export interface UserListResponse {

@@ -50,6 +50,14 @@ export function UsersListPage() {
       ),
     },
     {
+      key: 'birth_date',
+      header: 'Data de Nascimento',
+      render: (user: User) =>
+        user.birth_date
+          ? new Date(user.birth_date + 'T00:00:00').toLocaleDateString('pt-BR')
+          : '-',
+    },
+    {
       key: 'created_at',
       header: 'Criado em',
       render: (user: User) =>

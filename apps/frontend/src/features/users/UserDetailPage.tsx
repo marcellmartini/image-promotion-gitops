@@ -78,6 +78,18 @@ export function UserDetailPage() {
               </dd>
             </div>
             <div>
+              <dt className="text-sm text-ctp-subtext0">Data de Nascimento</dt>
+              <dd className="text-lg text-ctp-text mt-1">
+                {user.birth_date
+                  ? new Date(user.birth_date + 'T00:00:00').toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  : 'Nao informada'}
+              </dd>
+            </div>
+            <div>
               <dt className="text-sm text-ctp-subtext0">Criado em</dt>
               <dd className="text-lg text-ctp-text mt-1">
                 {new Date(user.created_at).toLocaleDateString('pt-BR', {

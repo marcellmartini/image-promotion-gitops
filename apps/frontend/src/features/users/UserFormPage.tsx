@@ -17,6 +17,7 @@ export function UserFormPage() {
     email: '',
     password: '',
     role: 'user' as UserRole,
+    birth_date: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -33,6 +34,7 @@ export function UserFormPage() {
         email: user.email,
         password: '',
         role: user.role,
+        birth_date: user.birth_date || '',
       });
     }
   }, [user]);
@@ -50,7 +52,7 @@ export function UserFormPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name?: string; email?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { name?: string; email?: string; birth_date?: string | null } }) =>
       usersApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -80,7 +82,11 @@ export function UserFormPage() {
     if (isEditing) {
       updateMutation.mutate({
         id: id!,
-        data: { name: formData.name, email: formData.email },
+        data: {
+          name: formData.name,
+          email: formData.email,
+          birth_date: formData.birth_date || null,
+        },
       });
     } else {
       createMutation.mutate({
@@ -88,6 +94,7 @@ export function UserFormPage() {
         email: formData.email,
         password: formData.password,
         role: formData.role,
+        birth_date: formData.birth_date || null,
       });
     }
   };
@@ -133,6 +140,14 @@ export function UserFormPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               error={errors.email}
               placeholder="email@exemplo.com"
+            />
+
+            <Input
+              label="Data de Nascimento"
+              type="date"
+              value={formData.birth_date}
+              onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+              error={errors.birth_date}
             />
 
             {!isEditing && (
