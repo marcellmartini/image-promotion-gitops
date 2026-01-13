@@ -1,0 +1,13 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: image-promotion
+  namespace: image-promotion
+spec:
+  promotionPolicies:
+    - stage: dev
+      autoPromotionEnabled: true
+    - stage: stg
+      autoPromotionEnabled: false
+    - stage: prod
+      autoPromotionEnabled: false
