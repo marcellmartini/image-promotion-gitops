@@ -76,9 +76,10 @@
 
 | Componente | Tecnologia | Versão |
 |------------|------------|--------|
-| **Orquestração** | Minikube | Latest (fixar versão atual) |
-| **GitOps CD** | Argo CD | Latest (fixar versão atual) |
-| **Promoção** | Kargo | Latest (fixar versão atual) |
+| **Orquestração** | Minikube | Latest |
+| **GitOps CD** | Argo CD | stable (manifest install) |
+| **Promoção** | Kargo | 1.8.4 |
+| **Certificados** | cert-manager | v1.16.2 |
 | **Templates** | Helm + Kustomize | Latest |
 | **Registry** | Docker Hub | - |
 | **CI** | GitHub Actions | - |
@@ -204,14 +205,13 @@ image-promotion-gitops/
 │       └── templates/
 ├── gitops/
 │   ├── argocd/
-│   │   ├── install/
 │   │   └── applications/
 │   │       ├── dev.yaml
 │   │       ├── stg.yaml
 │   │       └── prod.yaml
 │   └── kargo/
-│       ├── install/
 │       ├── project.yaml
+│       ├── projectconfig.yaml
 │       ├── warehouse.yaml
 │       └── stages/
 │           ├── dev.yaml
@@ -248,8 +248,10 @@ image-promotion-gitops/
 
 ```
 minikube cluster
-├── argocd (namespace)
-├── kargo (namespace)
+├── cert-manager (namespace)     # Certificados TLS
+├── argocd (namespace)           # Argo CD controller + UI
+├── kargo (namespace)            # Kargo controller + UI
+├── image-promotion (namespace)  # Kargo Project (Warehouse, Stages)
 ├── dev (namespace)
 │   ├── frontend
 │   └── backend
@@ -371,6 +373,22 @@ main (produção)
 | `feature/delete-user` | Segunda feature para demonstrar fluxo |
 | `feature/error` | Código com erro intencional para demonstrar rollback |
 | `feature/fix` | Correção do erro, demonstra recovery |
+
+### Regras de Commits
+
+**OBRIGATÓRIO:** Cada commit deve conter apenas UMA feature/componente.
+
+```bash
+# CORRETO - commits separados:
+git add helm/ && git commit -m "feat(helm): add Helm charts"
+git add k8s/ && git commit -m "feat(kustomize): add overlays"
+git add gitops/argocd/ && git commit -m "feat(argocd): add Applications"
+
+# ERRADO - tudo junto:
+git add . && git commit -m "feat: add all infrastructure"
+```
+
+**Motivo:** Facilita revisão de PRs, rollback granular e histórico limpo.
 
 ---
 
@@ -557,10 +575,10 @@ gh pr merge --squash
 
 ```bash
 # 1. Mostrar Kargo detectando nova imagem
-kubectl get freight -n kargo
+kubectl get freight -n image-promotion
 
 # 2. Mostrar promoção automática para dev
-kubectl get promotions -n kargo
+kubectl get promotions -n image-promotion
 
 # 3. Verificar Argo CD sincronizando
 argocd app get dev-app
@@ -576,10 +594,12 @@ curl http://dev.app.192.168.x.x.nip.io/api/users
 
 ```bash
 # 1. Mostrar stage aguardando aprovação
-kubectl get stages -n kargo
+kubectl get stages -n image-promotion
 
-# 2. Aprovar promoção (simulando QA)
-kargo promote --stage stg --freight <freight-id>
+# 2. Aprovar promoção via UI ou CLI (simulando QA)
+# Via UI: https://localhost:3000 → image-promotion → stg → Promote
+# Via CLI:
+kargo promote --project image-promotion --stage stg --freight <freight-id>
 
 # 3. Mostrar Argo CD sincronizando stg
 argocd app get stg-app
@@ -592,7 +612,7 @@ curl http://stg.app.192.168.x.x.nip.io/api/users
 
 ```bash
 # 1. Aprovar promoção (simulando PO)
-kargo promote --stage prod --freight <freight-id>
+kargo promote --project image-promotion --stage prod --freight <freight-id>
 
 # 2. Mostrar Argo CD sincronizando prod
 argocd app get prod-app
@@ -670,30 +690,43 @@ Em caso de falha durante a demo ao vivo, usar vídeos pré-gravados:
 ```bash
 #!/bin/bash
 # Inicializa minikube com configurações adequadas
-minikube start --cpus=4 --memory=8192 --driver=docker
+minikube start --cpus=4 --memory=4096 --driver=docker
 minikube addons enable ingress
+minikube addons enable metrics-server
+# Cria namespaces dev, stg, prod
 ```
 
 ### setup-argocd.sh
 
 ```bash
 #!/bin/bash
-# Instala Argo CD no cluster
+# Instala Argo CD no cluster via manifest oficial
 kubectl create namespace argocd
-kubectl apply -n argocd -f gitops/argocd/install/
-# Aguarda pods ficarem ready
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl wait --for=condition=Ready pods --all -n argocd --timeout=300s
+# Aplica Applications (dev-app, stg-app, prod-app)
+kubectl apply -f gitops/argocd/applications/
 ```
 
 ### setup-kargo.sh
 
 ```bash
 #!/bin/bash
-# Instala Kargo no cluster
-kubectl create namespace kargo
-kubectl apply -n kargo -f gitops/kargo/install/
-# Aplica configurações do projeto
+# Instala cert-manager (dependência do Kargo)
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
+kubectl wait --for=condition=Available deployment --all -n cert-manager --timeout=300s
+
+# Instala Kargo v1.8.4 via Helm
+helm install kargo oci://ghcr.io/akuity/kargo-charts/kargo \
+  --namespace kargo --create-namespace \
+  --version 1.8.4 \
+  --set api.adminAccount.passwordHash='...' \
+  --set api.adminAccount.tokenSigningKey='...' \
+  --wait
+
+# Aplica configurações do projeto (Project cria o namespace automaticamente)
 kubectl apply -f gitops/kargo/project.yaml
+kubectl apply -f gitops/kargo/projectconfig.yaml
 kubectl apply -f gitops/kargo/warehouse.yaml
 kubectl apply -f gitops/kargo/stages/
 ```
@@ -702,10 +735,12 @@ kubectl apply -f gitops/kargo/stages/
 
 ```bash
 #!/bin/bash
-# Regenera manifests do Helm
-helm template frontend ./helm/frontend > k8s/base/helm-output/frontend/all.yaml
+# Regenera manifests do Helm e valida com Kustomize
 helm template backend ./helm/backend > k8s/base/helm-output/backend/all.yaml
-echo "Helm output regenerado!"
+helm template frontend ./helm/frontend > k8s/base/helm-output/frontend/all.yaml
+kustomize build k8s/overlays/dev > /dev/null && echo "dev: OK"
+kustomize build k8s/overlays/stg > /dev/null && echo "stg: OK"
+kustomize build k8s/overlays/prod > /dev/null && echo "prod: OK"
 ```
 
 ---
@@ -756,12 +791,12 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 
 ### Semana 2 (13/01 - 15/01)
 
-- [ ] GitHub Actions (CI completo)
-- [ ] Helm charts
-- [ ] Kustomize overlays
-- [ ] Scripts de setup
-- [ ] Configuração Argo CD
-- [ ] Configuração Kargo
+- [x] GitHub Actions (CI completo)
+- [x] Helm charts (backend + frontend)
+- [x] Kustomize overlays (dev, stg, prod)
+- [x] Scripts de setup (minikube, argocd, kargo, generate-helm-output)
+- [x] Configuração Argo CD (Applications)
+- [x] Configuração Kargo (Project, ProjectConfig, Warehouse, Stages)
 - [ ] Branches de demonstração
 - [ ] Slides da apresentação
 - [ ] Runbook final
