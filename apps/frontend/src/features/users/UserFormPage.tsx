@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Layout } from '../../components/layout';
@@ -6,20 +6,19 @@ import { Button, Card, Input, Spinner } from '../../components/ui';
 import { usersApi } from '../../api';
 import type { UserRole } from '../../types';
 
+const emptyFormData = {
+  name: '',
+  email: '',
+  password: '',
+  role: 'user' as UserRole,
+  birth_date: '',
+};
+
 export function UserFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isEditing = !!id;
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'user' as UserRole,
-    birth_date: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: user, isLoading: isLoadingUser } = useQuery({
     queryKey: ['users', id],
@@ -27,17 +26,18 @@ export function UserFormPage() {
     enabled: isEditing,
   });
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
+  const initialFormData = user
+    ? {
         name: user.name,
         email: user.email,
         password: '',
         role: user.role,
         birth_date: user.birth_date || '',
-      });
-    }
-  }, [user]);
+      }
+    : emptyFormData;
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createMutation = useMutation({
     mutationFn: usersApi.create,
@@ -117,7 +117,7 @@ export function UserFormPage() {
       subtitle={isEditing ? user?.email : 'Preencha os dados do novo usuario'}
     >
       <div className="max-w-lg">
-        <Card>
+        <Card key={user?.id || 'new'}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {errors.submit && (
               <div className="p-3 rounded-lg bg-ctp-red/10 border border-ctp-red/20 text-ctp-red text-sm">
