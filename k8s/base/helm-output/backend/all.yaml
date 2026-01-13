@@ -1,0 +1,102 @@
+---
+# Source: backend/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secret
+  labels:
+    helm.sh/chart: backend-0.1.0
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  database-url: "postgresql://postgres:postgres@postgres:5432/users_db"
+  jwt-secret-key: "super-secret-key-for-dev"
+---
+# Source: backend/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    helm.sh/chart: backend-0.1.0
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: backend
+---
+# Source: backend/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    helm.sh/chart: backend-0.1.0
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/instance: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend
+        app.kubernetes.io/instance: backend
+    spec:
+      containers:
+        - name: backend
+          image: "marcellmartini/image-promotion-backend:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: database-url
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: jwt-secret-key
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi

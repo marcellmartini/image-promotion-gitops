@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dev
+
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: dev
+    includeSelectors: true
+
+images:
+  - name: marcellmartini/image-promotion-backend
+    newTag: latest
+  - name: marcellmartini/image-promotion-frontend
+    newTag: latest
+
+patches:
+  - target:
+      kind: Secret
+      name: backend-secret
+    patch: |-
+      - op: replace
+        path: /stringData/database-url
+        value: "postgresql://postgres:postgres@pg.192.168.49.1.nip.io:5432/users_db"
+      - op: replace
+        path: /stringData/jwt-secret-key
+        value: "dev-jwt-secret-key-2026"
