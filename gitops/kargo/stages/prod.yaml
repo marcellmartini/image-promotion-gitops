@@ -42,9 +42,8 @@ spec:
         - uses: git-commit
           config:
             path: ./repo
-            messageFromSteps:
-              - update-backend
-              - update-frontend
+            message: |
+              chore(prod): update images to ${{ imageFrom(vars.backendImage).Tag }}
         - uses: git-push
           config:
             path: ./repo
