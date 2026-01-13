@@ -31,6 +31,16 @@ gitops/          → Argo CD + Kargo configs
 - Commits: mensagens em inglês, descritivas
 - Código: comentários em português quando necessário
 
+## Git Workflow
+
+**IMPORTANTE:** Todos os commits devem ser mergeados na main via Pull Request.
+
+1. Criar branch: `git checkout -b feature/<nome>`
+2. Fazer commits separados por feature
+3. Push: `git push -u origin feature/<nome>`
+4. Criar PR: `gh pr create`
+5. Merge via GitHub (squash ou merge commit)
+
 ## Comandos úteis
 
 ```bash
@@ -56,9 +66,9 @@ alembic upgrade head
 - Frontend (gestão de usuários)
 - Dockerfiles + docker-compose.yaml
 - Alembic migrations
+- GitHub Actions (CI) - em PR
 
 **Pendente:**
-- GitHub Actions (CI)
 - Helm charts
 - Kustomize overlays
 - Argo CD + Kargo setup
