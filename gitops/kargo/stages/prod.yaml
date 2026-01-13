@@ -1,0 +1,56 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: image-promotion
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: image-promotion
+      sources:
+        stages:
+          - stg
+  promotionTemplate:
+    spec:
+      vars:
+        - name: backendImage
+          value: marcellmartini/image-promotion-backend
+        - name: frontendImage
+          value: marcellmartini/image-promotion-frontend
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/marcellmartini/image-promotion-gitops.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: kustomize-set-image
+          as: update-backend
+          config:
+            path: ./repo/k8s/overlays/prod
+            images:
+              - image: ${{ vars.backendImage }}
+                tag: ${{ imageFrom(vars.backendImage).Tag }}
+        - uses: kustomize-set-image
+          as: update-frontend
+          config:
+            path: ./repo/k8s/overlays/prod
+            images:
+              - image: ${{ vars.frontendImage }}
+                tag: ${{ imageFrom(vars.frontendImage).Tag }}
+        - uses: git-commit
+          config:
+            path: ./repo
+            messageFromSteps:
+              - update-backend
+              - update-frontend
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: prod-app
+                sources:
+                  - repoURL: https://github.com/marcellmartini/image-promotion-gitops.git

@@ -1,0 +1,17 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: image-promotion
+  namespace: image-promotion
+spec:
+  interval: 1m
+  freightCreationPolicy: Automatic
+  subscriptions:
+    - image:
+        repoURL: marcellmartini/image-promotion-backend
+        imageSelectionStrategy: NewestBuild
+        discoveryLimit: 5
+    - image:
+        repoURL: marcellmartini/image-promotion-frontend
+        imageSelectionStrategy: NewestBuild
+        discoveryLimit: 5
