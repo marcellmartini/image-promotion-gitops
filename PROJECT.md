@@ -95,8 +95,45 @@
 
 ## Arquitetura do Projeto
 
-### Estrutura de Diretórios
+### Estrutura de Diretórios (Atualizada)
 
+```
+image-promotion-gitops/
+├── docker-compose.yaml               # Orquestra todos os serviços
+├── PROJECT.md
+├── README.md
+├── LICENSE
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── apps/
+│   ├── frontend/
+│   │   ├── src/
+│   │   ├── Dockerfile                # Multi-stage: Node + Nginx
+│   │   ├── nginx.conf                # Proxy API + SPA routing
+│   │   ├── .dockerignore
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   └── backend/
+│       ├── alembic/                  # Migrations
+│       ├── src/                      # Código fonte
+│       ├── scripts/                  # Scripts auxiliares
+│       ├── Dockerfile                # Multi-stage: Poetry
+│       ├── entrypoint.sh             # Migrations + uvicorn
+│       ├── .dockerignore
+│       ├── compose.yaml              # PostgreSQL standalone
+│       ├── pyproject.toml
+│       └── poetry.lock
+├── k8s/                              # Manifests Kubernetes
+├── helm/                             # Helm charts
+├── gitops/                           # Argo CD + Kargo
+├── scripts/                          # Scripts de setup
+├── presentation/                     # Slides
+├── videos/                           # Backup videos
+└── docs/                             # Documentação
+```
+
+Estrutura original (planejada):
 ```
 image-promotion-gitops/
 ├── README.md
@@ -231,6 +268,86 @@ O PostgreSQL roda fora do cluster via docker-compose. A conexão é feita usando
 ```
 pg.192.168.x.x.nip.io → PostgreSQL no host
 ```
+
+---
+
+## Ambiente de Desenvolvimento Local (Docker)
+
+### Arquivos Docker
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `docker-compose.yaml` | Orquestra todos os serviços (postgres, backend, frontend) |
+| `apps/backend/Dockerfile` | Multi-stage build com Poetry, inclui alembic |
+| `apps/backend/entrypoint.sh` | Executa migrations e inicia uvicorn |
+| `apps/frontend/Dockerfile` | Multi-stage build Node + Nginx |
+| `apps/frontend/nginx.conf` | Proxy para API + SPA routing |
+
+### Comandos
+
+```bash
+# Na raiz do projeto (/image-promotion-gitops)
+
+# Iniciar todos os serviços
+docker compose up -d
+
+# Ver logs (todos)
+docker compose logs -f
+
+# Ver logs (específico)
+docker compose logs -f backend
+
+# Ver status
+docker compose ps
+
+# Rebuild após mudanças
+docker compose up -d --build
+
+# Parar tudo
+docker compose down
+
+# Parar e remover volumes (reset completo)
+docker compose down -v
+```
+
+### URLs Locais
+
+| Serviço | URL |
+|---------|-----|
+| **Frontend** | http://localhost:3000 |
+| **Backend API** | http://localhost:8000 |
+| **Swagger Docs** | http://localhost:8000/docs |
+| **PostgreSQL** | localhost:5432 |
+
+### Variáveis de Ambiente
+
+| Variável | Descrição | Default |
+|----------|-----------|---------|
+| `DATABASE_URL` | URL de conexão PostgreSQL | `postgresql://postgres:postgres@postgres:5432/users_db` |
+| `JWT_SECRET_KEY` | Chave secreta para tokens JWT | `super-secret-key-for-dev` |
+
+### Fluxo de Inicialização
+
+1. PostgreSQL inicia e aguarda healthcheck
+2. Backend aguarda PostgreSQL estar healthy
+3. Backend executa `alembic upgrade head` (migrations)
+4. Backend inicia uvicorn na porta 8000
+5. Frontend (nginx) inicia e faz proxy de `/api/` para backend
+
+### Criar Primeiro Usuário Admin
+
+```bash
+curl -X POST http://localhost:8000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Admin","email":"admin@example.com","password":"admin123","role":"admin"}'
+```
+
+### Tamanho das Imagens
+
+| Imagem | Tamanho |
+|--------|---------|
+| `image-promotion-backend:local` | ~295 MB |
+| `image-promotion-frontend:local` | ~63 MB |
 
 ---
 
@@ -634,7 +751,8 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 - [x] Frontend React + Vite (tema Catppuccin)
 - [x] Docker Compose para PostgreSQL
 - [x] Alembic migrations configurado
-- [ ] Dockerfiles para frontend e backend
+- [x] Dockerfiles para frontend e backend
+- [x] Docker Compose completo (postgres + backend + frontend)
 
 ### Semana 2 (13/01 - 15/01)
 
