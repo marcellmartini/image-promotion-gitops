@@ -1,3 +1,8 @@
+# Uso:
+#   docker compose up -d          # Inicia o PostgreSQL
+#   ./scripts/init-db.sh          # Executa migrations (primeira vez ou após up)
+#   ./scripts/reset-db.sh         # Reseta tudo e recria o banco
+
 services:
   postgres:
     image: postgres:16-alpine
