@@ -49,7 +49,9 @@ def get_current_user(
     )
 
 
-def require_admin(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
+def require_admin(
+    current_user: UserResponse = Depends(get_current_user),
+) -> UserResponse:
     """Dependency que requer role admin."""
     if current_user.role != UserRoleEnum.ADMIN:
         raise HTTPException(

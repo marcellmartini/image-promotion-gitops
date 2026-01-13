@@ -58,10 +58,7 @@ def get_stats(
 
     # Últimos 5 usuários cadastrados
     recent_users_models = (
-        db.query(UserModel)
-        .order_by(UserModel.created_at.desc())
-        .limit(5)
-        .all()
+        db.query(UserModel).order_by(UserModel.created_at.desc()).limit(5).all()
     )
     recent_users = [
         UserResponse(
@@ -87,10 +84,12 @@ def get_stats(
             .scalar()
             or 0
         )
-        growth_data.append({
-            "date": day.strftime("%Y-%m-%d"),
-            "count": count,
-        })
+        growth_data.append(
+            {
+                "date": day.strftime("%Y-%m-%d"),
+                "count": count,
+            }
+        )
 
     return StatsResponse(
         total_users=total_users,
