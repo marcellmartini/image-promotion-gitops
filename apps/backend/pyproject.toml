@@ -1,3 +1,6 @@
+[tool.poetry]
+package-mode = false
+
 [project]
 name = "image-promotion-backend"
 version = "0.1.0"
@@ -42,7 +45,18 @@ target-version = ["py311"]
 init-hook = "import sys; sys.path.append('src')"
 
 [tool.pylint.messages_control]
-disable = ["C0114", "C0115", "C0116", "R0903", "R0801"]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+    "R0801",  # duplicate-code
+    "R0902",  # too-many-instance-attributes
+    "R0903",  # too-few-public-methods
+    "R0913",  # too-many-arguments
+    "R0914",  # too-many-locals
+    "R0917",  # too-many-positional-arguments
+    "W0621",  # redefined-outer-name
+]
 
 [tool.pyright]
 include = ["src", "tests"]
