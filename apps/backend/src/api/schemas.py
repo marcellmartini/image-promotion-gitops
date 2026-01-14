@@ -34,6 +34,7 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     birth_date: Optional[date] = None
+    role: Optional[UserRoleEnum] = None
 
 
 class UserResponse(UserBase):

@@ -30,6 +30,7 @@ class User:
         name: Optional[str] = None,
         email: Optional[str] = None,
         birth_date: Optional[date] = None,
+        role: Optional[UserRole] = None,
     ) -> None:
         """Atualiza os dados do usuário."""
         if name is not None:
@@ -38,6 +39,8 @@ class User:
             self.email = email
         if birth_date is not None:
             self.birth_date = birth_date
+        if role is not None:
+            self.role = role
         self.updated_at = datetime.utcnow()
 
     def is_admin(self) -> bool:

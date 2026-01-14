@@ -64,6 +64,7 @@ class PostgreSQLUserAdapter(UserPersistencePort):
         if model:
             model.name = user.name
             model.email = user.email
+            model.role = user.role
             model.birth_date = user.birth_date
             model.updated_at = user.updated_at
             self._db.commit()

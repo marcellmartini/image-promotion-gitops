@@ -7,6 +7,7 @@ from domain import (
     UserAlreadyExistsException,
     UserNotFoundException,
     UserPersistencePort,
+    UserRole,
 )
 
 
@@ -52,6 +53,7 @@ class UserService:
         name: Optional[str] = None,
         email: Optional[str] = None,
         birth_date: Optional[date] = None,
+        role: Optional[UserRole] = None,
     ) -> User:
         """Atualiza um usuário existente."""
         user = self._persistence.find_by_id(user_id)
@@ -63,7 +65,7 @@ class UserService:
             if existing_user:
                 raise UserAlreadyExistsException(email)
 
-        user.update(name=name, email=email, birth_date=birth_date)
+        user.update(name=name, email=email, birth_date=birth_date, role=role)
         return self._persistence.update(user)
 
     def delete_user(self, user_id: UUID) -> bool:

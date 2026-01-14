@@ -125,11 +125,15 @@ def update_user(
     service: UserService = Depends(get_user_service),
 ) -> UserResponse:
     try:
+        role = None
+        if user_data.role is not None:
+            role = UserRole(user_data.role.value)
         user = service.update_user(
             user_id=user_id,
             name=user_data.name,
             email=user_data.email,
             birth_date=user_data.birth_date,
+            role=role,
         )
         return _user_to_response(user)
     except UserNotFoundException as e:

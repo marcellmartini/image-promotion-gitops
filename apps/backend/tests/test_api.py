@@ -335,6 +335,31 @@ class TestUpdateUser:
         assert response.status_code == 409
         assert "já existe" in response.json()["detail"]
 
+    def test_update_user_role(self, client, auth_headers):
+        # Create a user with role "user"
+        create_response = client.post(
+            "/api/users",
+            json={
+                "name": "Regular User",
+                "email": "regular@example.com",
+                "password": "pass123",
+                "role": "user",
+            },
+            headers=auth_headers,
+        )
+        user_id = create_response.json()["id"]
+        assert create_response.json()["role"] == "user"
+
+        # Update role to admin
+        response = client.put(
+            f"/api/users/{user_id}",
+            json={"role": "admin"},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        assert response.json()["role"] == "admin"
+
 
 class TestDeleteUser:
     """Testes para deleção de usuário (requer admin)."""
