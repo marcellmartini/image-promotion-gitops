@@ -4,7 +4,6 @@ sub_title: GitOps com Argo CD e Kargo
 author: Marcell Martini
 ---
 
-<!-- Introducao e Contexto - 10min -->
 
 # Bem-vindos!
 
@@ -19,7 +18,7 @@ author: Marcell Martini
 - LinkedIn: /in/marcellmartini
 - GitHub: github.com/marcellmartini
 
----
+<!-- end_slide -->
 
 # Agenda
 
@@ -34,7 +33,7 @@ author: Marcell Martini
 | 30min | Demo ao Vivo |
 | 05min | Conclusao e Q&A |
 
----
+<!-- end_slide -->
 
 # O Problema
 
@@ -51,7 +50,7 @@ author: Marcell Martini
 
 ## Spoiler: existe um jeito melhor
 
----
+<!-- end_slide -->
 
 # O Cenario Real
 
@@ -74,7 +73,7 @@ author: Marcell Martini
 └─────────────────────────────────────────────────┘
 ```
 
----
+<!-- end_slide -->
 
 # Os Desafios
 
@@ -100,7 +99,7 @@ author: Marcell Martini
 
 - **Rollback**: Voltar rapido quando algo da errado
 
----
+<!-- end_slide -->
 
 # A Solucao
 
@@ -119,9 +118,8 @@ author: Marcell Martini
 
 O Git e a unica fonte de verdade!
 
----
+<!-- end_slide -->
 
-<!-- Conceitos: Kubernetes e GitOps - 10min -->
 
 # Kubernetes
 
@@ -134,7 +132,7 @@ O Git e a unica fonte de verdade!
 - Open source desde 2014
 - Padrao de mercado
 
----
+<!-- end_slide -->
 
 # Kubernetes - Conceitos Basicos
 
@@ -150,7 +148,7 @@ Expoe Pods para rede (ClusterIP, NodePort, LoadBalancer)
 ## Namespace
 Isolamento logico de recursos
 
----
+<!-- end_slide -->
 
 # Kubernetes - Manifests
 
@@ -174,7 +172,7 @@ spec:
             - containerPort: 8000
 ```
 
----
+<!-- end_slide -->
 
 # GitOps
 
@@ -188,7 +186,7 @@ spec:
 >
 > -- Weaveworks (2017)
 
----
+<!-- end_slide -->
 
 # GitOps - Principios
 
@@ -210,24 +208,24 @@ Agentes aplicam mudancas automaticamente
 ## 4. Observavel
 Sistema detecta e corrige divergencias
 
----
+<!-- end_slide -->
 
 # GitOps - Fluxo
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ Desenvolvedor│────▶│    Git     │────▶│  Operador   │
-│  faz commit │     │ (PR/Merge) │     │  (Argo CD)  │
-└─────────────┘     └─────────────┘     └─────────────┘
+┌──────────────┐     ┌─────────────┐     ┌─────────────┐
+│ Desenvolvedor│────▶│     Git     │────▶│  Operador   │
+│  faz commit  │     │  (PR/Merge) │     │  (Argo CD)  │
+└──────────────┘     └─────────────┘     └─────────────┘
                                                │
                                                ▼
-                                        ┌─────────────┐
-                                        │ Kubernetes  │
-                                        │  (Cluster)  │
-                                        └─────────────┘
+                                         ┌─────────────┐
+                                         │ Kubernetes  │
+                                         │  (Cluster)  │
+                                         └─────────────┘
 ```
 
----
+<!-- end_slide -->
 
 # GitOps vs Tradicional
 
@@ -239,9 +237,8 @@ Sistema detecta e corrige divergencias
 | Drift | Nao detectado | Auto-corrigido |
 | Seguranca | CI precisa acesso | Cluster puxa |
 
----
+<!-- end_slide -->
 
-<!-- Conceitos: Helm e Kustomize - 10min -->
 
 # Helm
 
@@ -254,7 +251,7 @@ Sistema detecta e corrige divergencias
 - **Templates**: Go templates para manifests
 - **Releases**: Instancias de charts
 
----
+<!-- end_slide -->
 
 # Helm - Estrutura de Chart
 
@@ -268,7 +265,7 @@ helm/backend/
     └── secret.yaml     # Template do Secret
 ```
 
----
+<!-- end_slide -->
 
 # Helm - Templates
 
@@ -287,7 +284,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 ```
 
----
+<!-- end_slide -->
 
 # Helm - Values
 
@@ -305,7 +302,7 @@ resources:
     memory: 128Mi
 ```
 
----
+<!-- end_slide -->
 
 # Kustomize
 
@@ -318,7 +315,7 @@ resources:
 - Sem linguagem de template
 - Composicao de recursos
 
----
+<!-- end_slide -->
 
 # Kustomize - Estrutura
 
@@ -338,7 +335,7 @@ k8s/
         └── kustomization.yaml   # 3 replicas
 ```
 
----
+<!-- end_slide -->
 
 # Kustomize - Overlay
 
@@ -361,7 +358,7 @@ images:
     newTag: abc12345
 ```
 
----
+<!-- end_slide -->
 
 # Helm + Kustomize
 
@@ -383,9 +380,8 @@ images:
 Helm (gera base) → Kustomize (aplica overlays)
 ```
 
----
+<!-- end_slide -->
 
-<!-- Conceitos: Argo CD - 10min -->
 
 # Argo CD
 
@@ -400,32 +396,32 @@ Helm (gera base) → Kustomize (aplica overlays)
 - Webhooks e auto-sync
 - Health checks
 
----
+<!-- end_slide -->
 
 # Argo CD - Arquitetura
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Argo CD                       │
-│  ┌─────────────┐  ┌─────────────┐              │
-│  │   API       │  │    Repo     │              │
-│  │  Server     │  │   Server    │              │
-│  └─────────────┘  └─────────────┘              │
-│         │                │                      │
-│         ▼                ▼                      │
-│  ┌─────────────────────────────┐               │
-│  │     Application Controller   │               │
-│  └─────────────────────────────┘               │
-└─────────────────────────────────────────────────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │  Kubernetes   │
-              │   Clusters    │
-              └───────────────┘
+┌────────────────────────────────────┐
+│                   Argo CD          │
+│  ┌─────────────┐  ┌─────────────┐  │
+│  │   API       │  │    Repo     │  │
+│  │  Server     │  │   Server    │  │
+│  └─────────────┘  └─────────────┘  │
+│         │                │         │
+│         ▼                ▼         │
+│  ┌──────────────────────────────┐  │
+│  │     Application Controller   │  │
+│  └──────────────────────────────┘  │
+└────────────────────────────────────┘
+                   │
+                   ▼
+           ┌───────────────┐
+           │  Kubernetes   │
+           │   Clusters    │
+           └───────────────┘
 ```
 
----
+<!-- end_slide -->
 
 # Argo CD - Application
 
@@ -450,7 +446,7 @@ spec:
       selfHeal: true
 ```
 
----
+<!-- end_slide -->
 
 # Argo CD - Sync Status
 
@@ -470,7 +466,7 @@ spec:
 | **Progressing** | Aguardando pods |
 | **Degraded** | Algum recurso falhou |
 
----
+<!-- end_slide -->
 
 # Argo CD - Sync Policies
 
@@ -488,9 +484,8 @@ syncPolicy:
     selfHeal: true   # Corrige drift automatico
 ```
 
----
+<!-- end_slide -->
 
-<!-- Conceitos: Kargo - 10min -->
 
 # Kargo
 
@@ -504,7 +499,7 @@ syncPolicy:
 - Aprovacoes e gates
 - Rastreabilidade completa
 
----
+<!-- end_slide -->
 
 # Kargo - Conceitos
 
@@ -526,7 +521,7 @@ Artefato (imagem + versao) a ser promovido
 ## Stage
 Ambiente (dev, stg, prod) com regras de promocao
 
----
+<!-- end_slide -->
 
 # Kargo - Fluxo
 
@@ -550,7 +545,7 @@ Ambiente (dev, stg, prod) com regras de promocao
                                             └───────────┘
 ```
 
----
+<!-- end_slide -->
 
 # Kargo - Warehouse
 
@@ -570,7 +565,7 @@ spec:
         allowTags: ^[a-f0-9]{8}$
 ```
 
----
+<!-- end_slide -->
 
 # Kargo - Stage
 
@@ -598,7 +593,7 @@ spec:
         - uses: argocd-update
 ```
 
----
+<!-- end_slide -->
 
 # Kargo - Politicas de Promocao
 
@@ -621,7 +616,7 @@ promotionPolicies:
     autoPromotionEnabled: false
 ```
 
----
+<!-- end_slide -->
 
 # Argo CD + Kargo
 
@@ -643,9 +638,8 @@ metadata:
     kargo.akuity.io/authorized-stage: image-promotion:dev
 ```
 
----
+<!-- end_slide -->
 
-<!-- Arquitetura do Projeto - 5min -->
 
 # Arquitetura do Projeto Demo
 
@@ -660,7 +654,7 @@ metadata:
 | Promocao | Kargo |
 | Cluster | Minikube |
 
----
+<!-- end_slide -->
 
 # Estrutura de Ambientes
 
@@ -683,7 +677,7 @@ minikube cluster
     └── frontend (3 replicas)
 ```
 
----
+<!-- end_slide -->
 
 # Estrategia de Branches
 
@@ -704,33 +698,32 @@ Branches:
 - Historico de deployments separado
 - Recomendado pelos mantenedores do Kargo
 
----
+<!-- end_slide -->
 
 # Pipeline Completo
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    GitHub Actions (CI)                    │
+│                    GitHub Actions (CI)                   │
 │   PR → lint → test → build → push (Docker Hub)           │
 └──────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────┐
-│                    Kargo Warehouse                        │
-│              Detecta nova imagem (tag: abc12345)          │
+│                    Kargo Warehouse                       │
+│              Detecta nova imagem (tag: abc12345)         │
 └──────────────────────────────────────────────────────────┘
-                           │
-         ┌─────────────────┼─────────────────┐
-         ▼                 ▼                 ▼
-    ┌─────────┐       ┌─────────┐       ┌─────────┐
-    │   DEV   │──────▶│   STG   │──────▶│  PROD   │
-    │  (auto) │       │ (manual)│       │ (manual)│
-    └─────────┘       └─────────┘       └─────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+   ┌─────────┐           ┌─────────┐           ┌─────────┐
+   │   DEV   │──────────▶│   STG   │──────────▶│  PROD   │
+   │  (auto) │           │ (manual)│           │ (manual)│
+   └─────────┘           └─────────┘           └─────────┘
 ```
 
----
+<!-- end_slide -->
 
-<!-- Demo - 30min -->
 
 # Demo Time!
 
@@ -742,7 +735,7 @@ Branches:
 4. Promocao para PROD (aprovacao)
 5. Rollback automatico
 
----
+<!-- end_slide -->
 
 # Demo 1: CI Pipeline
 
@@ -753,17 +746,17 @@ Branches:
 gh pr create --base main --head feature/change-role
 
 # 2. GitHub Actions executa:
-#    - pyright (type check)
-#    - pylint (lint)
-#    - black (format)
-#    - tests
-#    - build & push (apos merge)
+- pyright (type check)
+- pylint (lint)
+- black (format)
+- tests
+- build & push (apos merge)
 
 # 3. Merge da PR
 gh pr merge --merge
 ```
 
----
+<!-- end_slide -->
 
 # Demo 2: Deploy em DEV
 
@@ -783,7 +776,7 @@ kubectl get promotions -n image-promotion
 kubectl get pods -n dev
 ```
 
----
+<!-- end_slide -->
 
 # Demo 3: Promocao para STG
 
@@ -802,7 +795,7 @@ kubectl get pods -n stg
 # https://localhost:3000
 ```
 
----
+<!-- end_slide -->
 
 # Demo 4: Promocao para PROD
 
@@ -818,7 +811,7 @@ kargo promote --project image-promotion \
 kubectl get pods -n prod
 ```
 
----
+<!-- end_slide -->
 
 # Demo 5: Rollback
 
@@ -845,9 +838,8 @@ kubectl get pods -n dev
 # STATUS: Running
 ```
 
----
+<!-- end_slide -->
 
-<!-- Conclusao - 5min -->
 
 # Recapitulando
 
@@ -869,7 +861,7 @@ kubectl get pods -n dev
 
 - **Helm + Kustomize**: Templates + Customizacao
 
----
+<!-- end_slide -->
 
 # Beneficios
 
@@ -882,7 +874,7 @@ kubectl get pods -n dev
 - **Rollback**: Rapido e confiavel
 - **Auditoria**: Quem aprovou, quando, o que
 
----
+<!-- end_slide -->
 
 # Proximos Passos
 
@@ -895,7 +887,7 @@ kubectl get pods -n dev
 5. Defina politicas de promocao
 6. Treine o time!
 
----
+<!-- end_slide -->
 
 # Recursos
 
@@ -907,33 +899,11 @@ kubectl get pods -n dev
 - **Helm**: https://helm.sh
 - **Kustomize**: https://kustomize.io
 
----
+<!-- end_slide -->
 
 # Obrigado!
 
-## Perguntas?
-
-<!-- pause -->
-
-### Marcell Martini
-
-- **Instagram**: @marcellmartini
-- **LinkedIn**: /in/marcellmartini
-- **GitHub**: github.com/marcellmartini
-
-<!-- pause -->
-
-### Repositorio da Demo
-
-```
-github.com/marcellmartini/image-promotion-gitops
-```
-
----
-
-# Q&A
-
-## Vamos conversar!
+## Perguntas? Q&A
 
 Perguntas sobre:
 - GitOps
@@ -942,3 +912,20 @@ Perguntas sobre:
 - Kubernetes
 - CI/CD
 - Qualquer coisa!
+ 
+<!-- pause -->
+
+<!-- end_slide -->
+
+# Redes Sociais
+## Marcell Martini
+
+- **Instagram**: @marcellmartini
+- **LinkedIn**: /in/marcellmartini
+- **GitHub**: github.com/marcellmartini
+
+### Repositorio da Demo
+
+```
+github.com/marcellmartini/image-promotion-gitops
+```
