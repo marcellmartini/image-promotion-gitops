@@ -101,6 +101,8 @@ alembic upgrade head
 - Vídeos de backup
 - Documentação (docs/)
 - Argo Rollouts + Verification (AnalysisTemplates)
+- Ansible Roles (substituir shell scripts)
+- Cilium (substituir kube-proxy, Gateway API, LB, observability)
 
 ## Estratégia de Branches (Environment-Specific)
 

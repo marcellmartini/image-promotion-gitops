@@ -871,6 +871,8 @@ O projeto está completo e pronto para a apresentação de 16/01/2026.
 1. Gravar vídeos de backup (contingência)
 2. Documentação técnica (docs/)
 3. **Argo Rollouts + Verification** - Adicionar verificação automatizada com AnalysisTemplates
+4. **Ansible Roles** - Substituir shell scripts por automação Ansible
+5. **Cilium** - Substituir kube-proxy, Gateway API, LB, observability
 
 #### Argo Rollouts (Planejado)
 
@@ -898,6 +900,107 @@ spec:
 ```
 
 **Referência:** https://docs.kargo.io/user-guide/how-to-guides/verification/
+
+#### Ansible Roles (Planejado)
+
+**Status:** Shell scripts funcionais, migração para Ansible planejada
+**Quando:** Pós-apresentação
+
+**Objetivo:** Substituir shell scripts por Ansible roles para automação reproduzível e idempotente.
+
+**Estrutura planejada:**
+```
+ansible/
+├── inventory/
+│   └── local.yml
+├── group_vars/
+│   └── all/
+│       ├── vars.yml
+│       └── vault.yml              # Secrets (ansible-vault)
+├── roles/
+│   ├── minikube/                  # Cluster + namespaces + addons
+│   ├── cert-manager/              # Certificados TLS
+│   ├── argocd/                    # Argo CD + Applications
+│   ├── kargo/                     # Kargo + Project + Stages
+│   └── cilium/                    # CNI + Gateway API + LB
+└── playbooks/
+    ├── setup-cluster.yml          # Executa todas as roles
+    └── setup-gitops.yml           # Só argocd + kargo
+```
+
+**Variáveis por role:**
+
+| Role | Variáveis | Secrets (Vault) |
+|------|-----------|-----------------|
+| `minikube` | cpus, memory, driver, addons | - |
+| `cert-manager` | version | - |
+| `argocd` | version, namespace | - |
+| `kargo` | version, namespace, repo_url | `github_pat` |
+| `cilium` | version, features | - |
+| `common` | - | `dockerhub_username`, `dockerhub_token` |
+
+**Uso:**
+```bash
+# Setup completo
+ansible-playbook playbooks/setup-cluster.yml --ask-vault-pass
+
+# Só GitOps
+ansible-playbook playbooks/setup-gitops.yml --ask-vault-pass
+
+# Com variáveis customizadas
+ansible-playbook playbooks/setup-cluster.yml -e "minikube_cpus=6" --ask-vault-pass
+```
+
+#### Cilium (Planejado)
+
+**Status:** Não instalado (usando kube-proxy + Ingress padrão)
+**Quando:** Pós-apresentação
+
+**Requisitos para Minikube:**
+```bash
+# Iniciar cluster SEM CNI e kube-proxy
+minikube start --cni=false --extra-config=kubeadm.skip-phases=addon/kube-proxy
+```
+
+**Funcionalidades a implementar:**
+
+| Feature | Cilium Config | Substitui |
+|---------|---------------|-----------|
+| **CNI** | Default | Minikube CNI padrão |
+| **kube-proxy replacement** | `kubeProxyReplacement=true` | kube-proxy |
+| **Gateway API** | `gatewayAPI.enabled=true` | Ingress Controller |
+| **L2 Announcements** | `l2announcements.enabled=true` | MetalLB |
+| **Transparent Encryption** | `encryption.type=wireguard` | - |
+| **Hubble Observability** | `hubble.enabled=true` | - |
+
+**Exportação de métricas/traces:**
+
+| Destino | Tipo | Descrição |
+|---------|------|-----------|
+| Grafana Mimir | Metrics | Métricas de rede (Prometheus remote-write) |
+| Grafana Loki | Logs | Flow logs e eventos |
+| Grafana Tempo | Traces | Distributed tracing (OTLP) |
+
+**Instalação com Helm (planejada):**
+```bash
+helm repo add cilium https://helm.cilium.io/
+helm install cilium cilium/cilium --namespace kube-system \
+  --set kubeProxyReplacement=true \
+  --set gatewayAPI.enabled=true \
+  --set l2announcements.enabled=true \
+  --set encryption.enabled=true \
+  --set encryption.type=wireguard \
+  --set hubble.enabled=true \
+  --set hubble.relay.enabled=true \
+  --set hubble.ui.enabled=true
+```
+
+**Referências:**
+- https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
+- https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/
+- https://docs.cilium.io/en/stable/network/l2-announcements/
+- https://docs.cilium.io/en/stable/security/network/encryption/
+- https://docs.cilium.io/en/stable/observability/hubble/
 
 ---
 
