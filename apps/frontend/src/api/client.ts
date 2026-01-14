@@ -1,7 +1,9 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Em produção, usa caminho relativo para que o nginx faça proxy para o backend correto
+// Em desenvolvimento local, defina VITE_API_URL=http://localhost:8000
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 const ACCESS_TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
