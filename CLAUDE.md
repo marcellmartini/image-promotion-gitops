@@ -274,6 +274,18 @@ kubectl annotate warehouse image-promotion -n image-promotion kargo.akuity.io/re
 
 4. **Variáveis Docker Hub:** Usar `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN` (não DOCKER_USER/DOCKER_TOKEN)
 
+5. **Correções em PRs existentes (fixup + autosquash):**
+   ```bash
+   # Criar commit de correção vinculado ao commit original
+   git add <arquivo> && git commit --fixup=<hash-do-commit-original>
+
+   # Incorporar fixups nos commits originais
+   GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash main
+
+   # Push forçado (necessário após rebase)
+   git push --force-with-lease
+   ```
+
 ## Documentação completa
 
 Para detalhes sobre arquitetura, decisões técnicas, runbook da apresentação, cronograma e plano de contingência, consulte `PROJECT.md`.
