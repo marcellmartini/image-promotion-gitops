@@ -18,39 +18,56 @@ spec:
           value: marcellmartini/image-promotion-backend
         - name: frontendImage
           value: marcellmartini/image-promotion-frontend
+        - name: gitRepo
+          value: https://github.com/marcellmartini/image-promotion-gitops.git
       steps:
+        # 1. Clone: branch de ambiente (output) + main (source)
         - uses: git-clone
           config:
-            repoURL: https://github.com/marcellmartini/image-promotion-gitops.git
+            repoURL: ${{ vars.gitRepo }}
             checkout:
+              - branch: env/prod
+                create: true
+                path: ./out
               - branch: main
-                path: ./repo
+                path: ./src
+        # 2. Limpa o branch de ambiente para receber novos manifests
+        - uses: git-clear
+          config:
+            path: ./out
+        # 3. Atualiza tags das imagens no overlay
         - uses: kustomize-set-image
           as: update-backend
           config:
-            path: ./repo/k8s/overlays/prod
+            path: ./src/k8s/overlays/prod
             images:
               - image: ${{ vars.backendImage }}
                 tag: ${{ imageFrom(vars.backendImage).Tag }}
         - uses: kustomize-set-image
           as: update-frontend
           config:
-            path: ./repo/k8s/overlays/prod
+            path: ./src/k8s/overlays/prod
             images:
               - image: ${{ vars.frontendImage }}
                 tag: ${{ imageFrom(vars.frontendImage).Tag }}
+        # 4. Renderiza manifests finais com Kustomize
+        - uses: kustomize-build
+          config:
+            path: ./src/k8s/overlays/prod
+            outPath: ./out
+        # 5. Commit e push dos manifests renderizados
         - uses: git-commit
           config:
-            path: ./repo
-            messageFromSteps:
-              - update-backend
-              - update-frontend
+            path: ./out
+            message: |
+              chore(prod): render manifests for ${{ imageFrom(vars.backendImage).Tag }}
         - uses: git-push
           config:
-            path: ./repo
+            path: ./out
+        # 6. Atualiza Argo CD
         - uses: argocd-update
           config:
             apps:
               - name: prod-app
                 sources:
-                  - repoURL: https://github.com/marcellmartini/image-promotion-gitops.git
+                  - repoURL: ${{ vars.gitRepo }}

@@ -4,22 +4,22 @@ metadata:
   name: stg-app
   namespace: argocd
   annotations:
+    kargo.akuity.io/authorized-stage: image-promotion:stg
     notifications.argoproj.io/subscribe.on-sync-succeeded.slack: deployments
 spec:
   project: default
   source:
     repoURL: https://github.com/marcellmartini/image-promotion-gitops.git
-    targetRevision: main
-    path: k8s/overlays/stg
+    targetRevision: env/stg
+    path: .  # Branch contém apenas manifests renderizados
   destination:
     server: https://kubernetes.default.svc
     namespace: stg
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+    # Sem automated - sync manual via Kargo argocd-update após promoção
     syncOptions:
       - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
     retry:
       limit: 5
       backoff:

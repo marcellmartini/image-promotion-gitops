@@ -4,13 +4,14 @@ metadata:
   name: dev-app
   namespace: argocd
   annotations:
+    kargo.akuity.io/authorized-stage: image-promotion:dev
     notifications.argoproj.io/subscribe.on-sync-succeeded.slack: deployments
 spec:
   project: default
   source:
     repoURL: https://github.com/marcellmartini/image-promotion-gitops.git
-    targetRevision: main
-    path: k8s/overlays/dev
+    targetRevision: env/dev
+    path: .  # Branch contém apenas manifests renderizados
   destination:
     server: https://kubernetes.default.svc
     namespace: dev

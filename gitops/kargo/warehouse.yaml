@@ -10,8 +10,12 @@ spec:
     - image:
         repoURL: marcellmartini/image-promotion-backend
         imageSelectionStrategy: NewestBuild
+        # Filtra tags que são short commit hashes (8 caracteres hex)
+        allowTags: ^[a-f0-9]{8}$
         discoveryLimit: 5
     - image:
         repoURL: marcellmartini/image-promotion-frontend
         imageSelectionStrategy: NewestBuild
+        # Filtra tags que são short commit hashes (8 caracteres hex)
+        allowTags: ^[a-f0-9]{8}$
         discoveryLimit: 5

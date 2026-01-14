@@ -2,10 +2,10 @@
 
 ## Visão Geral
 
-**Nome do Projeto:** image-promotion-gitops  
-**Repositório:** `marcellmartini/image-promotion-gitops`  
-**Autor:** Marcell Martini  
-**Licença:** MIT  
+**Nome do Projeto:** image-promotion-gitops
+**Repositório:** `marcellmartini/image-promotion-gitops`
+**Autor:** Marcell Martini
+**Licença:** MIT
 
 **Título da Palestra:** Promoção de Imagens Docker entre Ambientes com GitOps, Argo CD e Kargo
 
@@ -565,7 +565,7 @@ gh pr create --base main --head feature/update-user
 # (split no terminal: código | actions | logs)
 
 # 4. Aprovar e fazer merge da PR
-gh pr merge --squash
+gh pr merge --merge
 
 # 5. Mostrar build e push da imagem
 # Tag: <commit-sha>
@@ -797,11 +797,15 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 - [x] Scripts de setup (minikube, argocd, kargo, generate-helm-output)
 - [x] Configuração Argo CD (Applications)
 - [x] Configuração Kargo (Project, ProjectConfig, Warehouse, Stages)
-- [ ] Branches de demonstração
+- [x] Kargo detectando imagens do Docker Hub (Freight criado)
+- [x] GitHub PAT configurado para Kargo git-push
+- [x] Estratégia de branches por ambiente implementada (env/dev, env/stg, env/prod)
+- [x] Promoção automática para dev funcionando
+- [ ] Branches de demonstração (feature/update-user, feature/error, feature/fix)
 - [ ] Slides da apresentação
 - [ ] Runbook final
 - [ ] Gravação dos vídeos de backup
-- [ ] Testes completos do fluxo
+- [ ] Testes completos do fluxo (stg, prod)
 - [ ] Documentação (docs/)
 
 ### Dia da Apresentação (16/01)
@@ -809,6 +813,160 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 - [ ] Checklist pré-apresentação
 - [ ] Setup do ambiente
 - [ ] Apresentação às 19:00
+
+---
+
+## Status Atual (13/01/2026)
+
+### Kargo Promotion - FUNCIONANDO ✅
+
+O fluxo completo de promoção está funcionando:
+- ✅ Warehouse detecta imagens no Docker Hub
+- ✅ Freight é criado automaticamente
+- ✅ GitHub PAT configurado no secret `github-creds`
+- ✅ Promoção automática para dev funcionando
+- ✅ Argo CD sincroniza automaticamente
+
+### Próximos Passos
+
+1. Testar promoção para stg (aprovação manual)
+2. Testar promoção para prod (aprovação manual)
+3. Criar branches de demo (feature/update-user, feature/error, feature/fix)
+4. Criar slides e runbook
+
+---
+
+## Decisões Técnicas e Arquitetura
+
+### Estratégia de Branches por Ambiente (Environment-Specific Branches)
+
+**Data:** 13/01/2026
+**Referência:** https://docs.kargo.io/user-guide/patterns/#storage-options
+
+**Problema:** O branch `main` estava protegido no GitHub, impedindo push direto pelo Kargo.
+
+**Solução adotada:** Usar branches específicos por ambiente, conforme recomendação dos mantenedores do Kargo (Opção 1 - "decidedly the maintainers' preferred approach").
+
+**Branches criados (órfãos):**
+- `env/dev` - Manifests renderizados para ambiente dev
+- `env/stg` - Manifests renderizados para ambiente stg
+- `env/prod` - Manifests renderizados para ambiente prod
+
+**Arquivos modificados:**
+
+1. **Kargo Stages** (`gitops/kargo/stages/*.yaml`):
+   - `git-clone`: checkout do branch de ambiente + main
+   - `git-clear`: limpa branch de ambiente
+   - `kustomize-set-image`: atualiza tags das imagens
+   - `kustomize-build`: renderiza manifests finais
+   - `git-commit` + `git-push`: commit dos manifests renderizados
+
+2. **Kargo Warehouse** (`gitops/kargo/warehouse.yaml`):
+   - `allowTags: ^[a-f0-9]{8}$` - filtra apenas tags de commit hash (8 chars)
+
+3. **Argo CD Applications** (`gitops/argocd/applications/*.yaml`):
+   - `targetRevision: env/<ambiente>` para branches de ambiente
+   - `path: .` - branch contém apenas manifests renderizados na raiz
+   - Anotação `kargo.akuity.io/authorized-stage: image-promotion:<ambiente>`
+
+4. **CI** (`.github/workflows/ci.yml`):
+   - `git rev-parse --short=8` para gerar tag de 8 caracteres
+   - Removida tag `latest`
+
+**Fluxo resultante:**
+```
+1. git-clone      → checkout env/dev (output) + main (source)
+2. git-clear      → limpa branch de ambiente
+3. kustomize-set-image → atualiza tags das imagens
+4. kustomize-build → renderiza manifests finais para ./out
+5. git-commit     → commit dos manifests renderizados
+6. git-push       → push para branch de ambiente
+7. argocd-update  → sincroniza Argo CD
+```
+
+**Vantagens:**
+- Branch `main` permanece protegido
+- Isolamento entre ambientes (falhas não afetam outros)
+- Clareza na separação código fonte vs estado de deployment
+- Sem necessidade de merge entre branches (funcionam como storage)
+- Auditoria facilitada do histórico de deployments
+
+**Desvantagens:**
+- 3 branches extras para gerenciar
+- Pode parecer GitFlow (mas não é - sem merges)
+
+### GitHub PAT Configuration
+
+**Secret criado:**
+```bash
+kubectl create secret generic github-creds \
+  --namespace=image-promotion \
+  --from-literal=repoURL=https://github.com/marcellmartini/image-promotion-gitops.git \
+  --from-literal=username=x-access-token \
+  --from-literal=password=<GITHUB_PAT>
+
+kubectl label secret github-creds -n image-promotion kargo.akuity.io/cred-type=git
+```
+
+**Requisitos do PAT:**
+- Tipo: Classic ou Fine-grained
+- Escopo: `repo` (Full control) para Classic
+- Para Fine-grained: `Contents: Read and Write` no repositório específico
+
+### Kargo Authorized Stage Annotation
+
+Para permitir que o Kargo faça refresh nas Applications do Argo CD, é necessário adicionar a anotação:
+```yaml
+metadata:
+  annotations:
+    kargo.akuity.io/authorized-stage: <namespace>:<stage>
+```
+
+Exemplo: `kargo.akuity.io/authorized-stage: image-promotion:dev`
+
+### Sync Policy por Ambiente
+
+**Problema:** Ao criar branches `env/*` a partir da main, o Argo CD sincronizou automaticamente stg e prod porque os manifests já existiam.
+
+**Solução:** Remover `syncPolicy.automated` de stg-app e prod-app.
+
+| App | Sync Policy | Motivo |
+|-----|-------------|--------|
+| dev-app | automated | Promoção automática pelo Kargo |
+| stg-app | manual | Aguarda promoção + sync via Kargo argocd-update |
+| prod-app | manual | Aguarda promoção + sync via Kargo argocd-update |
+
+O step `argocd-update` do Kargo força o sync após promoção bem-sucedida, então não é necessário auto-sync para stg e prod.
+
+---
+
+## Comandos Úteis para Troubleshooting
+
+### Verificar status do Kargo
+```bash
+kubectl get warehouse,freight,stages,promotions -n image-promotion
+```
+
+### Recriar stage para forçar nova promoção
+```bash
+kubectl delete stage dev -n image-promotion
+kubectl apply -f gitops/kargo/stages/dev.yaml
+```
+
+### Verificar logs de promoção
+```bash
+kubectl get promotions -n image-promotion -o yaml | grep -A 20 "status:"
+```
+
+### Verificar se branch foi atualizado
+```bash
+git fetch origin env/dev && git log origin/env/dev --oneline -3
+```
+
+### Verificar secret do GitHub
+```bash
+kubectl get secret github-creds -n image-promotion -o jsonpath='{.data}' | jq
+```
 
 ---
 
