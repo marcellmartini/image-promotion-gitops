@@ -801,12 +801,12 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 - [x] GitHub PAT configurado para Kargo git-push
 - [x] Estratégia de branches por ambiente implementada (env/dev, env/stg, env/prod)
 - [x] Promoção automática para dev funcionando
-- [ ] Branches de demonstração (feature/update-user, feature/error, feature/fix)
-- [ ] Slides da apresentação
-- [ ] Runbook final
-- [ ] Gravação dos vídeos de backup
-- [ ] Testes completos do fluxo (stg, prod)
-- [ ] Documentação (docs/)
+- [x] Branches de demonstração (feature/change-role, feature/error, feature/fix)
+- [x] Slides da apresentação (50 slides, Presenterm)
+- [x] Runbook final
+- [x] Testes completos do fluxo (dev → stg → prod validado)
+- [ ] Gravação dos vídeos de backup (opcional)
+- [ ] Documentação (docs/) (opcional, pós-apresentação)
 
 ### Dia da Apresentação (16/01)
 
@@ -816,23 +816,34 @@ Os slides estão em `presentation/slides.md` em formato Markdown compatível com
 
 ---
 
-## Status Atual (13/01/2026)
+## Status Atual (14/01/2026)
 
-### Kargo Promotion - FUNCIONANDO ✅
+### PRONTO PARA APRESENTAÇÃO ✅
 
-O fluxo completo de promoção está funcionando:
+O projeto está completo e pronto para a apresentação de 16/01/2026.
+
+#### Infraestrutura
 - ✅ Warehouse detecta imagens no Docker Hub
 - ✅ Freight é criado automaticamente
 - ✅ GitHub PAT configurado no secret `github-creds`
 - ✅ Promoção automática para dev funcionando
+- ✅ Promoção manual para stg/prod validada
 - ✅ Argo CD sincroniza automaticamente
 
-### Próximos Passos
+#### Branches de Demo
+- ✅ `feature/change-role` - Nova feature (alterar role do usuário)
+- ✅ `feature/error` - Erro intencional (health check falha)
+- ✅ `feature/fix` - Correção do erro
 
-1. Testar promoção para stg (aprovação manual)
-2. Testar promoção para prod (aprovação manual)
-3. Criar branches de demo (feature/update-user, feature/error, feature/fix)
-4. Criar slides e runbook
+#### Apresentação
+- ✅ Slides (50 slides, 1h30min) - `presentation/slides.md`
+- ✅ Runbook da demo - `presentation/runbook.md`
+- ✅ Guia de gravação de vídeos - `presentation/video-recording-guide.md`
+
+### Itens Opcionais (Pós-Apresentação)
+
+1. Gravar vídeos de backup (contingência)
+2. Documentação técnica (docs/)
 
 ---
 
