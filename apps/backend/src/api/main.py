@@ -31,10 +31,10 @@ app.include_router(router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 
 
-# @app.get("/health", tags=["health"])
-# def health_check():
-#     """Endpoint de health check para Kubernetes."""
-#     return {"status": "healthy"}
+@app.get("/health", tags=["health"])
+def health_check():
+    """Endpoint de health check para Kubernetes."""
+    return {"status": "healthy"}
 
 
 @app.get("/ready", tags=["health"])

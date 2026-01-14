@@ -4,10 +4,10 @@ from uuid import uuid4
 class TestHealthEndpoints:
     """Testes para endpoints de health check."""
 
-    # def test_health_check(self, client):
-    #     response = client.get("/health")
-    #     assert response.status_code == 200
-    #     assert response.json() == {"status": "healthy"}
+    def test_health_check(self, client):
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "healthy"}
 
     def test_readiness_check(self, client):
         response = client.get("/ready")
