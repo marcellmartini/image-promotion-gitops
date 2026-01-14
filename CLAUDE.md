@@ -74,7 +74,9 @@ cd apps/backend && source .venv/bin/activate
 alembic upgrade head
 ```
 
-## Status atual (13/01/2026)
+## Status atual (14/01/2026)
+
+### PRONTO PARA APRESENTAÇÃO ✅
 
 **Concluído:**
 - Backend (CRUD + JWT + RBAC)
@@ -84,17 +86,20 @@ alembic upgrade head
 - GitHub Actions (CI)
 - Helm charts (backend + frontend)
 - Kustomize overlays (dev, stg, prod)
-- Argo CD Applications (com anotação kargo.akuity.io/authorized-stage)
+- Argo CD Applications
 - Kargo setup (Project, Warehouse, Stages)
 - Scripts de setup (minikube, argocd, kargo)
-- **Promoção automática para dev FUNCIONANDO** ✅
+- Promoção automática para dev ✅
+- Promoção manual stg/prod validada ✅
 - Estratégia de branches por ambiente (env/dev, env/stg, env/prod)
+- Branches de demo: `feature/change-role`, `feature/error`, `feature/fix`
+- Slides (50 slides) - `presentation/slides.md`
+- Runbook - `presentation/runbook.md`
+- Guia de gravação - `presentation/video-recording-guide.md`
 
-**Pendente:**
-- Testar promoção stg/prod
-- Branches de demo (feature/update-user, feature/error, feature/fix)
-- Slides + Runbook
-- Vídeos de backup (opcional)
+**Opcional (pós-apresentação):**
+- Vídeos de backup
+- Documentação (docs/)
 
 ## Estratégia de Branches (Environment-Specific)
 
