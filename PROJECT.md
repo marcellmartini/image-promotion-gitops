@@ -750,10 +750,13 @@ kustomize build k8s/overlays/prod > /dev/null && echo "prod: OK"
 ### Instalação
 
 ```bash
-# Download do binário (Linux)
-wget https://github.com/mfontanini/presenterm/releases/latest/download/presenterm-x86_64-unknown-linux-gnu.tar.gz
-tar -xzf presenterm-x86_64-unknown-linux-gnu.tar.gz
-sudo mv presenterm /usr/local/bin/
+# Download do binário (Linux x86_64) - versão musl (statically linked, sem dependência de glibc)
+VERSION=$(curl -s https://api.github.com/repos/mfontanini/presenterm/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+VERSION_NUM=$(echo "$VERSION" | sed 's/^v//')
+wget "https://github.com/mfontanini/presenterm/releases/download/${VERSION}/presenterm-${VERSION_NUM}-x86_64-unknown-linux-musl.tar.gz"
+tar -xzf "presenterm-${VERSION_NUM}-x86_64-unknown-linux-musl.tar.gz"
+mv "presenterm-${VERSION_NUM}/presenterm" "$HOME/.local/bin/"
+rm -rf presenterm-${VERSION_NUM}*
 
 # Verificar instalação
 presenterm --version
