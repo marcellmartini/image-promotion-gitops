@@ -982,6 +982,43 @@ git fetch origin env/dev && git log origin/env/dev --oneline -3
 kubectl get secret github-creds -n image-promotion -o jsonpath='{.data}' | jq
 ```
 
+### Docker Hub Rate Limits
+
+**Problema:** `TOOMANYREQUESTS: You have reached your unauthenticated pull rate limit`
+
+**Limites:**
+| Tipo | Limite |
+|------|--------|
+| Anônimo | 100 pulls/6h |
+| Autenticado | 200 pulls/6h |
+
+**Verificar rate limit atual:**
+```bash
+# Anônimo
+TOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+curl -s -I -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest 2>&1 | grep ratelimit
+
+# Autenticado (usar variáveis DOCKERHUB_USERNAME e DOCKERHUB_TOKEN)
+TOKEN=$(curl -s -u "$DOCKERHUB_USERNAME:$DOCKERHUB_TOKEN" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+curl -s -I -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest 2>&1 | grep ratelimit
+```
+
+**Secret do Kargo para autenticação (formato correto com regex):**
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dockerhub-creds
+  namespace: image-promotion
+  labels:
+    kargo.akuity.io/cred-type: image
+stringData:
+  repoURL: "^marcellmartini/.*"
+  repoURLIsRegex: "true"
+  username: "<DOCKERHUB_USERNAME>"
+  password: "<DOCKERHUB_TOKEN>"
+```
+
 ---
 
 ## Requisitos do Sistema (para rodar a demo)
