@@ -52,7 +52,7 @@ export function UserFormPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name?: string; email?: string; birth_date?: string | null } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { name?: string; email?: string; birth_date?: string | null; role?: UserRole } }) =>
       usersApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -86,6 +86,7 @@ export function UserFormPage() {
           name: formData.name,
           email: formData.email,
           birth_date: formData.birth_date || null,
+          role: formData.role,
         },
       });
     } else {
@@ -151,35 +152,33 @@ export function UserFormPage() {
             />
 
             {!isEditing && (
-              <>
-                <Input
-                  label="Senha"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  error={errors.password}
-                  placeholder="••••••••"
-                />
-
-                <div>
-                  <label className="block text-sm font-medium text-ctp-subtext1 mb-1">
-                    Perfil
-                  </label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value as UserRole })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-ctp-surface2
-                      bg-ctp-surface0 text-ctp-text
-                      focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent"
-                  >
-                    <option value="user">Usuario</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-              </>
+              <Input
+                label="Senha"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                error={errors.password}
+                placeholder="••••••••"
+              />
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-ctp-subtext1 mb-1">
+                Perfil
+              </label>
+              <select
+                value={formData.role}
+                onChange={(e) =>
+                  setFormData({ ...formData, role: e.target.value as UserRole })
+                }
+                className="w-full px-4 py-2 rounded-lg border border-ctp-surface2
+                  bg-ctp-surface0 text-ctp-text
+                  focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent"
+              >
+                <option value="user">Usuario</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
 
             <div className="flex gap-3 pt-4">
               <Button

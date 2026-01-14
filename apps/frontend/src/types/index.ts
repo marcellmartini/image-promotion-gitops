@@ -22,6 +22,7 @@ export interface UserUpdate {
   name?: string;
   email?: string;
   birth_date?: string | null;
+  role?: UserRole;
 }
 
 export interface UserListResponse {
