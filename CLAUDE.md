@@ -193,6 +193,20 @@ git fetch origin env/dev && git log origin/env/dev --oneline -3
 kubectl get secret github-creds -n image-promotion
 ```
 
+## Instruções para Claude CLI
+
+**IMPORTANTE - Sempre seguir:**
+
+1. **GitHub CLI (`gh`):** Sempre executar `unset GITHUB_TOKEN` antes de usar comandos `gh` (ex: `gh pr create`)
+
+2. **Workflow de commits:**
+   - Criar branch: `git checkout -b <type>/<nome>`
+   - Commit separado por feature
+   - Push: `git push -u origin <branch>`
+   - PR: `unset GITHUB_TOKEN && gh pr create`
+
+3. **Nunca commitar direto na main** - sempre via PR
+
 ## Documentação completa
 
 Para detalhes sobre arquitetura, decisões técnicas, runbook da apresentação, cronograma e plano de contingência, consulte `PROJECT.md`.
