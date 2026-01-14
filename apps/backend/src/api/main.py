@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import router
 from .auth_routes import router as auth_router
+from .routes import router
 from .stats_routes import router as stats_router
-
 
 app = FastAPI(
     title="Image Promotion Backend",
@@ -32,10 +31,10 @@ app.include_router(router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 
 
-@app.get("/health", tags=["health"])
-def health_check():
-    """Endpoint de health check para Kubernetes."""
-    return {"status": "healthy"}
+# @app.get("/health", tags=["health"])
+# def health_check():
+#     """Endpoint de health check para Kubernetes."""
+#     return {"status": "healthy"}
 
 
 @app.get("/ready", tags=["health"])
