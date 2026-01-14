@@ -97,9 +97,10 @@ alembic upgrade head
 - Runbook - `presentation/runbook.md`
 - Guia de gravação - `presentation/video-recording-guide.md`
 
-**Opcional (pós-apresentação):**
+**Próximos Passos (pós-apresentação):**
 - Vídeos de backup
 - Documentação (docs/)
+- Argo Rollouts + Verification (AnalysisTemplates)
 
 ## Estratégia de Branches (Environment-Specific)
 
