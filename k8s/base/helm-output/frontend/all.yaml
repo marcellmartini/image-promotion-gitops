@@ -93,6 +93,8 @@ spec:
       annotations:
         checksum/config: 5a5be835a13808ec3c486eaeda6f4283a51468dacb9e777e8c64f404b23319b0
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: frontend
           image: "marcellmartini/image-promotion-frontend:latest"
