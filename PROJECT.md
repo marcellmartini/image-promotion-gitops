@@ -866,10 +866,38 @@ O projeto está completo e pronto para a apresentação de 16/01/2026.
 - ✅ Runbook da demo - `presentation/runbook.md`
 - ✅ Guia de gravação de vídeos - `presentation/video-recording-guide.md`
 
-### Itens Opcionais (Pós-Apresentação)
+### Próximos Passos (Pós-Apresentação)
 
 1. Gravar vídeos de backup (contingência)
 2. Documentação técnica (docs/)
+3. **Argo Rollouts + Verification** - Adicionar verificação automatizada com AnalysisTemplates
+
+#### Argo Rollouts (Planejado)
+
+**Status:** Não instalado (opcional para funcionalidade atual)
+**Quando:** Semana de 20/01/2026
+
+**Por que adicionar:**
+- Habilita `AnalysisTemplate` para verificação automatizada pós-deploy
+- Permite testes de integração, queries em Prometheus/Datadog, health checks customizados
+- Complementa o fluxo atual que usa apenas health checks implícitos do Argo CD
+
+**Instalação:**
+```bash
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+```
+
+**Exemplo de uso com Kargo:**
+```yaml
+# Em cada Stage, adicionar verificação
+spec:
+  verification:
+    analysisTemplates:
+      - name: integration-tests
+```
+
+**Referência:** https://docs.kargo.io/user-guide/how-to-guides/verification/
 
 ---
 
