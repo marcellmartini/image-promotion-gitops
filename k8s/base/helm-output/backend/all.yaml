@@ -60,6 +60,8 @@ spec:
         app.kubernetes.io/name: backend
         app.kubernetes.io/instance: backend
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: backend
           image: "marcellmartini/image-promotion-backend:latest"
