@@ -4,7 +4,7 @@ metadata:
   name: image-promotion
   namespace: image-promotion
 spec:
-  interval: 1m
+  interval: 5m
   freightCreationPolicy: Automatic
   subscriptions:
     - image:
