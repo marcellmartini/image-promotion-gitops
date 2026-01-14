@@ -390,6 +390,29 @@ git add . && git commit -m "feat: add all infrastructure"
 
 **Motivo:** Facilita revisão de PRs, rollback granular e histórico limpo.
 
+### Correções em PRs (fixup + autosquash)
+
+Quando precisar corrigir commits dentro de uma PR já criada, usar `--fixup` e `--autosquash`:
+
+```bash
+# 1. Ver commits da PR
+git log main..HEAD --oneline
+
+# 2. Criar commit de correção vinculado ao commit original
+git add <arquivo> && git commit --fixup=<hash-do-commit-original>
+
+# 3. Incorporar fixups nos commits originais (não-interativo)
+GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash main
+
+# 4. Push forçado (necessário após rebase)
+git push --force-with-lease
+```
+
+**Vantagens:**
+- Mantém histórico limpo (sem commits "fix typo", "correction", etc.)
+- Cada commit permanece atômico e com propósito claro
+- Facilita code review
+
 ---
 
 ## Pipeline CI (GitHub Actions)
