@@ -193,6 +193,71 @@ git fetch origin env/dev && git log origin/env/dev --oneline -3
 kubectl get secret github-creds -n image-promotion
 ```
 
+## Docker Hub - Autenticação e Rate Limits
+
+**Variáveis de ambiente:** `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN`
+
+**Rate Limits:**
+| Tipo | Limite |
+|------|--------|
+| Anônimo | 100 pulls/6h |
+| Autenticado | 200 pulls/6h |
+
+**Verificar rate limit:**
+```bash
+# Anônimo
+TOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+curl -s -I -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest 2>&1 | grep -i ratelimit
+
+# Autenticado
+TOKEN=$(curl -s -u "$DOCKERHUB_USERNAME:$DOCKERHUB_TOKEN" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+curl -s -I -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest 2>&1 | grep -i ratelimit
+```
+
+**Secret do Kargo para Docker Hub (formato correto):**
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dockerhub-creds
+  namespace: image-promotion
+  labels:
+    kargo.akuity.io/cred-type: image
+stringData:
+  repoURL: "^marcellmartini/.*"
+  repoURLIsRegex: "true"
+  username: "<DOCKERHUB_USERNAME>"
+  password: "<DOCKERHUB_TOKEN>"
+```
+
+## Resetar Ambiente para Demo
+
+```bash
+# 1. Limpar Kargo
+kubectl delete promotions,freight --all -n image-promotion
+kubectl delete stages --all -n image-promotion
+
+# 2. Resetar branches de ambiente
+for branch in env/dev env/stg env/prod; do
+  git checkout --orphan temp-$branch
+  git rm -rf . 2>/dev/null || true
+  git commit --allow-empty -m "Reset branch for fresh demo"
+  git push -f origin HEAD:$branch
+done
+git checkout main
+
+# 3. Limpar namespaces
+for ns in dev stg prod; do
+  kubectl delete deployment,service,configmap,secret --all -n $ns
+done
+
+# 4. Recriar stages
+kubectl apply -f gitops/kargo/stages/
+
+# 5. Forçar refresh do Warehouse
+kubectl annotate warehouse image-promotion -n image-promotion kargo.akuity.io/refresh=$(date +%s) --overwrite
+```
+
 ## Instruções para Claude CLI
 
 **IMPORTANTE - Sempre seguir:**
@@ -206,6 +271,20 @@ kubectl get secret github-creds -n image-promotion
    - PR: `unset GITHUB_TOKEN && gh pr create`
 
 3. **Nunca commitar direto na main** - sempre via PR
+
+4. **Variáveis Docker Hub:** Usar `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN` (não DOCKER_USER/DOCKER_TOKEN)
+
+5. **Correções em PRs existentes (fixup + autosquash):**
+   ```bash
+   # Criar commit de correção vinculado ao commit original
+   git add <arquivo> && git commit --fixup=<hash-do-commit-original>
+
+   # Incorporar fixups nos commits originais
+   GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash main
+
+   # Push forçado (necessário após rebase)
+   git push --force-with-lease
+   ```
 
 ## Documentação completa
 

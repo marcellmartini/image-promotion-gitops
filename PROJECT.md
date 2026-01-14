@@ -390,6 +390,29 @@ git add . && git commit -m "feat: add all infrastructure"
 
 **Motivo:** Facilita revisão de PRs, rollback granular e histórico limpo.
 
+### Correções em PRs (fixup + autosquash)
+
+Quando precisar corrigir commits dentro de uma PR já criada, usar `--fixup` e `--autosquash`:
+
+```bash
+# 1. Ver commits da PR
+git log main..HEAD --oneline
+
+# 2. Criar commit de correção vinculado ao commit original
+git add <arquivo> && git commit --fixup=<hash-do-commit-original>
+
+# 3. Incorporar fixups nos commits originais (não-interativo)
+GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash main
+
+# 4. Push forçado (necessário após rebase)
+git push --force-with-lease
+```
+
+**Vantagens:**
+- Mantém histórico limpo (sem commits "fix typo", "correction", etc.)
+- Cada commit permanece atômico e com propósito claro
+- Facilita code review
+
 ---
 
 ## Pipeline CI (GitHub Actions)
@@ -980,6 +1003,43 @@ git fetch origin env/dev && git log origin/env/dev --oneline -3
 ### Verificar secret do GitHub
 ```bash
 kubectl get secret github-creds -n image-promotion -o jsonpath='{.data}' | jq
+```
+
+### Docker Hub Rate Limits
+
+**Problema:** `TOOMANYREQUESTS: You have reached your unauthenticated pull rate limit`
+
+**Limites:**
+| Tipo | Limite |
+|------|--------|
+| Anônimo | 100 pulls/6h |
+| Autenticado | 200 pulls/6h |
+
+**Verificar rate limit atual:**
+```bash
+# Anônimo
+TOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+curl -s -I -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest 2>&1 | grep ratelimit
+
+# Autenticado (usar variáveis DOCKERHUB_USERNAME e DOCKERHUB_TOKEN)
+TOKEN=$(curl -s -u "$DOCKERHUB_USERNAME:$DOCKERHUB_TOKEN" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+curl -s -I -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest 2>&1 | grep ratelimit
+```
+
+**Secret do Kargo para autenticação (formato correto com regex):**
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dockerhub-creds
+  namespace: image-promotion
+  labels:
+    kargo.akuity.io/cred-type: image
+stringData:
+  repoURL: "^marcellmartini/.*"
+  repoURLIsRegex: "true"
+  username: "<DOCKERHUB_USERNAME>"
+  password: "<DOCKERHUB_TOKEN>"
 ```
 
 ---

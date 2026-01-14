@@ -20,18 +20,18 @@ echo ""
 echo "=== Configurando Docker Hub credentials ==="
 echo "Crie um Access Token em: https://hub.docker.com/settings/security"
 echo ""
-read -p "Digite seu Docker Hub username: " DOCKER_USER
-read -sp "Digite seu Docker Hub token: " DOCKER_TOKEN
+read -p "Digite seu Docker Hub username: " DOCKERHUB_USERNAME
+read -sp "Digite seu Docker Hub token: " DOCKERHUB_TOKEN
 echo ""
 
-if [ -z "$DOCKER_USER" ] || [ -z "$DOCKER_TOKEN" ]; then
+if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
     echo "Aviso: Docker Hub credentials não configuradas. Pode haver rate limit."
 else
     for ns in dev stg prod; do
         kubectl create secret docker-registry dockerhub-creds \
             --docker-server=https://index.docker.io/v1/ \
-            --docker-username="$DOCKER_USER" \
-            --docker-password="$DOCKER_TOKEN" \
+            --docker-username="$DOCKERHUB_USERNAME" \
+            --docker-password="$DOCKERHUB_TOKEN" \
             -n $ns --dry-run=client -o yaml | kubectl apply -f -
     done
     echo "Secret dockerhub-creds criado em dev, stg e prod!"

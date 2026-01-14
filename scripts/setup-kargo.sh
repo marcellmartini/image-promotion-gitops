@@ -23,6 +23,22 @@ if [ -z "$GITHUB_PAT" ]; then
 fi
 
 echo ""
+echo "=== Configuração do Docker Hub ==="
+echo "O Kargo precisa de credenciais do Docker Hub para buscar imagens (evita rate limit)."
+echo "Crie um Access Token em: https://hub.docker.com/settings/security"
+echo ""
+read -p "Digite seu Docker Hub username: " DOCKERHUB_USERNAME
+read -sp "Digite seu Docker Hub token: " DOCKERHUB_TOKEN
+echo ""
+
+if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+    echo "Aviso: Docker Hub credentials não configuradas. Pode haver rate limit."
+    DOCKER_CONFIGURED=false
+else
+    DOCKER_CONFIGURED=true
+fi
+
+echo ""
 echo "=== Instalando cert-manager ${CERT_MANAGER_VERSION} ==="
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml
 
@@ -75,6 +91,28 @@ kubectl create secret generic github-creds \
 
 kubectl label secret github-creds -n image-promotion kargo.akuity.io/cred-type=git --overwrite
 echo "Secret github-creds criado com sucesso!"
+
+echo ""
+echo "=== Criando secret do Docker Hub para buscar imagens ==="
+if [ "$DOCKER_CONFIGURED" = true ]; then
+    kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dockerhub-creds
+  namespace: image-promotion
+  labels:
+    kargo.akuity.io/cred-type: image
+stringData:
+  repoURL: "^${DOCKERHUB_USERNAME}/.*"
+  repoURLIsRegex: "true"
+  username: "${DOCKERHUB_USERNAME}"
+  password: "${DOCKERHUB_TOKEN}"
+EOF
+    echo "Secret dockerhub-creds criado com sucesso!"
+else
+    echo "Pulando criação do secret (credenciais não fornecidas)"
+fi
 
 echo ""
 echo "=== Aplicando demais configurações ==="
