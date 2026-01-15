@@ -1,18 +1,14 @@
 ---
-title: Promocao de Imagens Docker entre Ambientes
+title: Promoção de Imagens Docker entre Ambientes
 sub_title: GitOps com Argo CD e Kargo
 author: Marcell Martini
 ---
 
-
 # Bem-vindos!
-
-## Promocao de Imagens Docker entre Ambientes
+## Promoção de Imagens Docker entre Ambientes
 ### GitOps com Argo CD e Kargo
 
 **Marcell Martini**
-
-<!-- pause -->
 
 - Instagram: @marcellmartini
 - LinkedIn: /in/marcellmartini
@@ -22,29 +18,29 @@ author: Marcell Martini
 
 # Agenda
 
-| Tempo | Topico |
-|-------|--------|
-| 10min | Introducao e Contexto |
-| 10min | Kubernetes e GitOps |
-| 10min | Helm e Kustomize |
-| 10min | Argo CD |
-| 10min | Kargo |
+| Tempo | Topico                 |
+|-------|------------------------|
+| 10min | Introdução e Contexto  |
+| 10min | Kubernetes e GitOps    |
+| 10min | Helm e Kustomize       |
+| 10min | Argo CD                |
+| 10min | Kargo                  |
 | 05min | Arquitetura do Projeto |
-| 30min | Demo ao Vivo |
-| 05min | Conclusao e Q&A |
+| 30min | Demo ao Vivo           |
+| 05min | Conclusão e Q&A        |
 
 <!-- end_slide -->
 
 # O Problema
 
-## Como voce faz deploy hoje?
+## Como você faz deploy hoje?
 
 <!-- pause -->
 
 - SSH no servidor e `git pull`?
-- Scripts bash que "funcionam"?
+- Scripts Bash que "funcionam"?
 - Jenkins com 47 plugins?
-- "Roda na minha maquina!"
+- "Roda na minha máquina!"
 
 <!-- pause -->
 
@@ -56,20 +52,20 @@ author: Marcell Martini
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                   DESENVOLVIMENTO               │
-│  "Funcionou no meu PC, sobe pra producao!"      │
+│                DESENVOLVIMENTO                  │
+│    "Funcionou no meu PC, sobe pra produção!"    │
 └─────────────────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────┐
-│                   HOMOLOGACAO                   │
-│  "Ops, esqueci de atualizar a variavel..."      │
+│                   HOMOLOGAÇÃO                   │
+│    "Ops, esqueci de atualizar a variável..."    │
 └─────────────────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────┐
-│                    PRODUCAO                     │
-│  "Por que ta diferente do staging?!"            │
+│                    PRODUÇÃO                     │
+│      "Por que ta diferente do staging?!"        │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -77,11 +73,11 @@ author: Marcell Martini
 
 # Os Desafios
 
-## Promover artefatos entre ambientes e GARANTIR:
+## Promover artefatos entre ambientes e GARANTE:
 
 <!-- pause -->
 
-- **Consistencia**: Mesma imagem em todos os ambientes
+- **Consistência**: Mesma imagem em todos os ambientes
 
 <!-- pause -->
 
@@ -89,64 +85,80 @@ author: Marcell Martini
 
 <!-- pause -->
 
-- **Automacao**: Menos intervencao manual = menos erros
+- **Automação**: Menos intervenção manual = menos erros
 
 <!-- pause -->
 
-- **Controle**: Aprovacoes antes de ir para producao
+- **Controle**: Aprovações antes de ir para produção
 
 <!-- pause -->
 
-- **Rollback**: Voltar rapido quando algo da errado
+- **Rollback**: Voltar rápido quando algo da errado
 
 <!-- end_slide -->
 
-# A Solucao
+# Uma Solução
+<!-- pause -->
 
 ## GitOps + Argo CD + Kargo
 
 ```
 ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
 │   Git    │───▶│ Argo CD  │───▶│  Kargo   │───▶│   K8s    │
-│  (SSOT)  │    │   (CD)   │    │(Promocao)│    │ (Deploy) │
+│  (SSOT)  │    │ (K8S-CD) │    │(Promoção)│    │ (Deploy) │
 └──────────┘    └──────────┘    └──────────┘    └──────────┘
 ```
 
-<!-- pause -->
-
 **SSOT** = Single Source of Truth
 
-O Git e a unica fonte de verdade!
+O Git é a única fonte de verdade!
 
 <!-- end_slide -->
 
 
 # Kubernetes
 
-## O que e?
+## O que é?
 
 <!-- pause -->
 
 - Orquestrador de containers
+
+<!-- pause -->
+
 - Criado pelo Google (Borg -> Kubernetes)
+
+<!-- pause -->
+
 - Open source desde 2014
-- Padrao de mercado
+
+<!-- pause -->
+
+- Padrão de mercado
 
 <!-- end_slide -->
 
 # Kubernetes - Conceitos Basicos
 
+<!-- pause -->
+
 ## Pod
 A menor unidade deployavel (1+ containers)
 
+<!-- pause -->
+
 ## Deployment
-Gerencia ReplicaSets e Pods
+Gerência ReplicaSets e Pods
+
+<!-- pause -->
 
 ## Service
-Expoe Pods para rede (ClusterIP, NodePort, LoadBalancer)
+Expõe Pods para rede (ClusterIP, NodePort, LoadBalancer)
+
+<!-- pause -->
 
 ## Namespace
-Isolamento logico de recursos
+Isolamento lógico de recursos
 
 <!-- end_slide -->
 
@@ -176,11 +188,11 @@ spec:
 
 # GitOps
 
-## O que e?
+## O que é?
 
 <!-- pause -->
 
-> "GitOps e uma forma de fazer Continuous Delivery
+> "GitOps é uma forma de fazer Continuous Delivery
 > usando Git como fonte de verdade para
 > infraestrutura declarativa."
 >
@@ -188,10 +200,10 @@ spec:
 
 <!-- end_slide -->
 
-# GitOps - Principios
+# GitOps - Princípios
 
 ## 1. Declarativo
-Toda a configuracao e descrita de forma declarativa
+Toda a configuração é descrita de forma declarativa
 
 <!-- pause -->
 
@@ -201,7 +213,7 @@ Git armazena todo o estado desejado
 <!-- pause -->
 
 ## 3. Automatico
-Agentes aplicam mudancas automaticamente
+Agentes aplicam mudanças automaticamente
 
 <!-- pause -->
 
@@ -229,13 +241,13 @@ Sistema detecta e corrige divergencias
 
 # GitOps vs Tradicional
 
-| Aspecto | Tradicional | GitOps |
-|---------|-------------|--------|
-| Deploy | Push (CI faz deploy) | Pull (agente aplica) |
-| Auditoria | Logs espalhados | Git history |
-| Rollback | Scripts manuais | `git revert` |
-| Drift | Nao detectado | Auto-corrigido |
-| Seguranca | CI precisa acesso | Cluster puxa |
+| Aspecto   | Tradicional          | GitOps               |
+|-----------|----------------------|----------------------|
+| Deploy    | Push (CI faz deploy) | Pull (agente aplica) |
+| Auditoria | Logs espalhados      | Git history          |
+| Rollback  | Scripts manuais      | `git revert`         |
+| Drift     | Não detectado        | Auto-corrigido       |
+| Seguranca | CI precisa acesso    | Cluster puxa         |
 
 <!-- end_slide -->
 
@@ -258,7 +270,7 @@ Sistema detecta e corrige divergencias
 ```
 helm/backend/
 ├── Chart.yaml          # Metadados do chart
-├── values.yaml         # Valores padrao
+├── values.yaml         # Valores padrão
 └── templates/
     ├── deployment.yaml # Template do Deployment
     ├── service.yaml    # Template do Service
@@ -306,14 +318,14 @@ resources:
 
 # Kustomize
 
-## Customizacao sem Templates
+## Customização sem Templates
 
 <!-- pause -->
 
 - Nativo do kubectl (`kubectl apply -k`)
 - Patches e overlays
 - Sem linguagem de template
-- Composicao de recursos
+- Composição de recursos
 
 <!-- end_slide -->
 
@@ -366,11 +378,11 @@ images:
 
 <!-- pause -->
 
-| Helm | Kustomize |
-|------|-----------|
+| Helm                | Kustomize       |
+|---------------------|-----------------|
 | Templates complexos | Patches simples |
-| Reusabilidade | Customizacao |
-| Dependencias | Composicao |
+| Reusabilidade       | Customização    |
+| Dependencias        | Composição      |
 
 <!-- pause -->
 
@@ -390,10 +402,25 @@ Helm (gera base) → Kustomize (aplica overlays)
 <!-- pause -->
 
 - Declarativo e versionado
+
+<!-- pause -->
+
 - UI Web intuitiva
+
+<!-- pause -->
+
 - Multi-cluster
+
+<!-- pause -->
+
 - SSO e RBAC
+
+<!-- pause -->
+
 - Webhooks e auto-sync
+
+<!-- pause -->
+
 - Health checks
 
 <!-- end_slide -->
@@ -401,24 +428,24 @@ Helm (gera base) → Kustomize (aplica overlays)
 # Argo CD - Arquitetura
 
 ```
-┌────────────────────────────────────┐
-│                   Argo CD          │
-│  ┌─────────────┐  ┌─────────────┐  │
-│  │   API       │  │    Repo     │  │
-│  │  Server     │  │   Server    │  │
-│  └─────────────┘  └─────────────┘  │
-│         │                │         │
-│         ▼                ▼         │
-│  ┌──────────────────────────────┐  │
-│  │     Application Controller   │  │
-│  └──────────────────────────────┘  │
-└────────────────────────────────────┘
-                   │
-                   ▼
-           ┌───────────────┐
-           │  Kubernetes   │
-           │   Clusters    │
-           └───────────────┘
+   ┌────────────────────────────────────┐
+   │              Argo CD               │
+   │  ┌─────────────┐  ┌─────────────┐  │
+   │  │   API       │  │    Repo     │  │
+   │  │  Server     │  │   Server    │  │
+   │  └─────────────┘  └─────────────┘  │
+   │         │                │         │
+   │         ▼                ▼         │
+   │  ┌──────────────────────────────┐  │
+   │  │     Application Controller   │  │
+   │  └──────────────────────────────┘  │
+   └────────────────────────────────────┘
+                      │
+                      ▼
+              ┌───────────────┐
+              │  Kubernetes   │
+              │   Clusters    │
+              └───────────────┘
 ```
 
 <!-- end_slide -->
@@ -452,19 +479,19 @@ spec:
 
 ## Estados de uma Application
 
-| Status | Descricao |
-|--------|-----------|
-| **Synced** | Cluster = Git |
-| **OutOfSync** | Cluster != Git |
-| **Unknown** | Erro ao verificar |
+| Status        | Descrição         |
+|---------------|-------------------|
+| **Synced**    | Cluster = Git     |
+| **OutOfSync** | Cluster != Git    |
+| **Unknown**   | Erro ao verificar |
 
 ## Health Status
 
-| Status | Descricao |
-|--------|-----------|
-| **Healthy** | Todos recursos OK |
-| **Progressing** | Aguardando pods |
-| **Degraded** | Algum recurso falhou |
+| Status          | Descrição            |
+|-----------------|----------------------|
+| **Healthy**     | Todos recursos OK    |
+| **Progressing** | Aguardando pods      |
+| **Degraded**    | Algum recurso falhou |
 
 <!-- end_slide -->
 
@@ -489,13 +516,13 @@ syncPolicy:
 
 # Kargo
 
-## Promocao de Artefatos para Kubernetes
+## Promoção de Artefatos para Kubernetes
 
 <!-- pause -->
 
 - Criado pela Akuity (fundadores do Argo)
 - Complementa Argo CD
-- Promocao progressiva (dev → stg → prod)
+- Promoção progressiva (dev → stg → prod)
 - Aprovacoes e gates
 - Rastreabilidade completa
 
@@ -514,12 +541,12 @@ Monitora registries por novas imagens
 <!-- pause -->
 
 ## Freight
-Artefato (imagem + versao) a ser promovido
+Artefato (imagem + versão) a ser promovido
 
 <!-- pause -->
 
 ## Stage
-Ambiente (dev, stg, prod) com regras de promocao
+Ambiente (dev, stg, prod) com regras de promoção
 
 <!-- end_slide -->
 
@@ -595,7 +622,7 @@ spec:
 
 <!-- end_slide -->
 
-# Kargo - Politicas de Promocao
+# Kargo - Politicas de Promoção
 
 ## Auto Promotion (Dev)
 ```yaml
@@ -622,17 +649,17 @@ promotionPolicies:
 
 ## Responsabilidades
 
-| Ferramenta | Funcao |
-|------------|--------|
-| **Argo CD** | Sincroniza Git → Cluster |
-| **Kargo** | Promove artefatos entre ambientes |
+| Ferramenta  | Função                            |
+|-------------|-----------------------------------|
+| **Argo CD** | Sincroniza Git → Cluster          |
+| **Kargo**   | Promove artefatos entre ambientes |
 
 <!-- pause -->
 
-## Integracao
+## Integração
 
 ```yaml
-# Anotacao na Application do Argo CD
+# Anotação na Application do Argo CD
 metadata:
   annotations:
     kargo.akuity.io/authorized-stage: image-promotion:dev
@@ -645,14 +672,14 @@ metadata:
 
 ## Stack
 
-| Componente | Tecnologia |
-|------------|------------|
-| Backend | FastAPI + PostgreSQL |
-| Frontend | React + Vite |
-| CI | GitHub Actions |
-| CD | Argo CD |
-| Promocao | Kargo |
-| Cluster | Minikube |
+| Componente | Tecnologia           |
+|------------|----------------------|
+| Cluster    | Minikube             |
+| Backend    | FastAPI + PostgreSQL |
+| Frontend   | React + Vite         |
+| CI         | GitHub Actions       |
+| CD         | Argo CD              |
+| Promoção   | Kargo                |
 
 <!-- end_slide -->
 
@@ -662,16 +689,21 @@ metadata:
 minikube cluster
 ├── argocd (namespace)
 │   └── Argo CD Controller
+│
 ├── kargo (namespace)
 │   └── Kargo Controller
+│
 ├── image-promotion (namespace)
 │   └── Warehouse, Stages
+│
 ├── dev (namespace)
 │   ├── backend (1 replica)
 │   └── frontend (1 replica)
+│
 ├── stg (namespace)
 │   ├── backend (2 replicas)
 │   └── frontend (2 replicas)
+│
 └── prod (namespace)
     ├── backend (3 replicas)
     └── frontend (3 replicas)
@@ -697,6 +729,7 @@ Branches:
 - Isolamento entre ambientes
 - Historico de deployments separado
 - Recomendado pelos mantenedores do Kargo
+- `Não é GitFlow` !!!
 
 <!-- end_slide -->
 
@@ -705,12 +738,12 @@ Branches:
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                    GitHub Actions (CI)                   │
-│   PR → lint → test → build → push (Docker Hub)           │
+│       PR → lint → test → build → push (Docker Hub)       │
 └──────────────────────────────────────────────────────────┘
-                           │
-                           ▼
+                              │
+                              ▼
 ┌──────────────────────────────────────────────────────────┐
-│                    Kargo Warehouse                       │
+│                      Kargo Warehouse                     │
 │              Detecta nova imagem (tag: abc12345)         │
 └──────────────────────────────────────────────────────────┘
                               │
@@ -727,13 +760,21 @@ Branches:
 
 # Demo Time!
 
+<!-- pause -->
+
+![gemini2](./images/Gemini_Generated_Image_z8zpwjz8zpwjz8zp.png)
+
+<!-- end_slide -->
+
+# Demo Time!
+
 ## O que vamos ver:
 
 1. CI Pipeline (PR → merge → build)
 2. Deploy automatico em DEV
-3. Promocao para STG (aprovacao)
-4. Promocao para PROD (aprovacao)
-5. Rollback automatico
+3. Promoção para STG (aprovação)
+4. Promoção para PROD (aprovação)
+5. Rollback
 
 <!-- end_slide -->
 
@@ -769,7 +810,7 @@ kubectl get warehouse -n image-promotion
 # Verificar Freight criado
 kubectl get freight -n image-promotion
 
-# Verificar promocao automatica
+# Verificar promoção automatica
 kubectl get promotions -n image-promotion
 
 # Verificar pods em dev
@@ -778,9 +819,9 @@ kubectl get pods -n dev
 
 <!-- end_slide -->
 
-# Demo 3: Promocao para STG
+# Demo 3: Promoção para STG
 
-## Aprovacao Manual (QA)
+## Aprovação Manual (QA)
 
 ```bash
 # Via CLI
@@ -788,18 +829,18 @@ kargo promote --project image-promotion \
               --stage stg \
               --freight <freight-alias>
 
-# Verificar sincronizacao
+# Verificar sincronização
 kubectl get pods -n stg
 
 # Ou via UI do Kargo
-# https://localhost:3000
+https://localhost:3000
 ```
 
 <!-- end_slide -->
 
-# Demo 4: Promocao para PROD
+# Demo 4: Promoção para PROD
 
-## Aprovacao Manual (PO)
+## Aprovação Manual (PO)
 
 ```bash
 # Via CLI
@@ -807,8 +848,11 @@ kargo promote --project image-promotion \
               --stage prod \
               --freight <freight-alias>
 
-# Verificar sincronizacao
+# Verificar sincronização
 kubectl get pods -n prod
+
+# Ou via UI do Kargo
+https://localhost:3000
 ```
 
 <!-- end_slide -->
@@ -859,7 +903,7 @@ kubectl get pods -n dev
 
 <!-- pause -->
 
-- **Helm + Kustomize**: Templates + Customizacao
+- **Helm + Kustomize**: Templates + Customização
 
 <!-- end_slide -->
 
@@ -869,7 +913,7 @@ kubectl get pods -n dev
 
 - **Consistencia**: Mesma imagem em todos os ambientes
 - **Rastreabilidade**: Historico completo no Git
-- **Automacao**: CI/CD sem intervencao manual
+- **Automação**: CI/CD sem intervenção manual
 - **Controle**: Aprovacoes para stg/prod
 - **Rollback**: Rapido e confiavel
 - **Auditoria**: Quem aprovou, quando, o que
@@ -884,7 +928,7 @@ kubectl get pods -n dev
 2. Defina estrutura de branches/ambientes
 3. Crie Helm charts ou Kustomize bases
 4. Instale e configure Kargo
-5. Defina politicas de promocao
+5. Defina politicas de promoção
 6. Treine o time!
 
 <!-- end_slide -->
@@ -912,7 +956,7 @@ Perguntas sobre:
 - Kubernetes
 - CI/CD
 - Qualquer coisa!
- 
+
 <!-- pause -->
 
 <!-- end_slide -->
