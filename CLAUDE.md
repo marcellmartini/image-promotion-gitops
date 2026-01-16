@@ -277,9 +277,15 @@ kubectl annotate warehouse image-promotion -n image-promotion kargo.akuity.io/re
 
 4. **Variáveis Docker Hub:** Usar `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN` (não DOCKER_USER/DOCKER_TOKEN)
 
-5. **Correções em PRs existentes (fixup + autosquash):**
+5. **Correções em feature branches (fixup + autosquash):**
+
+   **QUANDO USAR:** Apenas para corrigir commits anteriores **dentro da mesma feature branch**.
+   Exemplo: adicionar teste esquecido a um commit de feature que já existe no branch.
+
+   **QUANDO NÃO USAR:** Nunca para commits que já estão na main ou que causariam rebase extenso em toda a árvore.
+
    ```bash
-   # Criar commit de correção vinculado ao commit original
+   # Criar commit de correção vinculado ao commit original (da mesma feature branch)
    git add <arquivo> && git commit --fixup=<hash-do-commit-original>
 
    # Incorporar fixups nos commits originais
