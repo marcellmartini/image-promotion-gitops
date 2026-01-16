@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Layout } from '../../components/layout';
@@ -26,18 +26,20 @@ export function UserFormPage() {
     enabled: isEditing,
   });
 
-  const initialFormData = user
-    ? {
+  const [formData, setFormData] = useState(emptyFormData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
         name: user.name,
         email: user.email,
         password: '',
         role: user.role,
         birth_date: user.birth_date || '',
-      }
-    : emptyFormData;
-
-  const [formData, setFormData] = useState(initialFormData);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+      });
+    }
+  }, [user]);
 
   const createMutation = useMutation({
     mutationFn: usersApi.create,
