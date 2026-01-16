@@ -36,7 +36,7 @@ spec:
             secretKeyRef:
               key: jwt-secret-key
               name: backend-secret
-        image: marcellmartini/image-promotion-backend:9c333a8f
+        image: marcellmartini/image-promotion-backend:29a05d22
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

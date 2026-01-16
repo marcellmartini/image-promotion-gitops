@@ -27,7 +27,7 @@ spec:
         environment: dev
     spec:
       containers:
-      - image: marcellmartini/image-promotion-frontend:9c333a8f
+      - image: marcellmartini/image-promotion-frontend:29a05d22
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
